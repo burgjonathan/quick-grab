@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>QUICK GRAB</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#0a0a12;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:#fff}
+body{display:flex;flex-direction:column;position:fixed;top:0;left:0;right:0;bottom:0}
+
+/* ===== MENU ===== */
+#menu{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;background:#0a0a12}
+#menu.hidden{display:none}
+.menu-title{font-size:clamp(2.5rem,8vw,5rem);font-weight:900;letter-spacing:.15em;text-transform:uppercase;background:linear-gradient(135deg,#00f0ff,#ff00e5,#ffe600);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 30px rgba(0,240,255,.5)) drop-shadow(0 0 60px rgba(255,0,229,.3));animation:menuGlow 2s ease-in-out infinite alternate;margin-bottom:.2em}
+@keyframes menuGlow{0%{filter:drop-shadow(0 0 30px rgba(0,240,255,.5)) drop-shadow(0 0 60px rgba(255,0,229,.3))}100%{filter:drop-shadow(0 0 50px rgba(0,240,255,.8)) drop-shadow(0 0 80px rgba(255,0,229,.6))}}
+.menu-subtitle{font-size:clamp(.75rem,2.2vw,1.1rem);color:#888;margin-bottom:1.8em;letter-spacing:.3em;text-transform:uppercase}
+.menu-section{margin-bottom:1.3em;text-align:center}
+.menu-section h3{font-size:.8rem;color:#555;text-transform:uppercase;letter-spacing:.2em;margin-bottom:.5em}
+.menu-btn-row{display:flex;gap:.5em;justify-content:center;flex-wrap:wrap}
+.menu-btn{padding:.6em 1.3em;border:2px solid #333;border-radius:12px;background:rgba(255,255,255,.05);color:#ccc;font-size:clamp(.8rem,2vw,1rem);font-weight:700;cursor:pointer;transition:all .15s}
+.menu-btn:active,.menu-btn.sel{background:rgba(0,240,255,.15);border-color:#00f0ff;color:#00f0ff;transform:scale(.95)}
+.menu-btn.sel{box-shadow:0 0 20px rgba(0,240,255,.3)}
+.menu-btn.big{padding:.9em 2.5em;font-size:clamp(1rem,3vw,1.4rem);border-color:#00f0ff;color:#00f0ff;margin-top:.5em}
+.menu-btn.big:active{background:rgba(0,240,255,.3);transform:scale(.93)}
+.stats-btn{margin-top:1.2em;padding:.4em 1em;border:1px solid #333;border-radius:8px;background:transparent;color:#555;font-size:.75rem;cursor:pointer}
+.stats-btn:active{color:#aaa}
+
+/* ===== AD PLACEHOLDERS ===== */
+.ad-banner{height:28px;min-height:28px;background:rgba(255,255,255,.03);border-bottom:1px solid #151520;display:flex;align-items:center;justify-content:center;font-size:.55rem;color:#282828;letter-spacing:.1em;flex-shrink:0;position:relative;z-index:50}
+.ad-interstitial{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ad-interstitial.hidden{display:none}
+.ad-interstitial .ad-box{width:80%;max-width:400px;height:55%;background:#111;border:1px dashed #333;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#333;font-size:1rem}
+.ad-interstitial .close-ad{margin-top:1em;padding:.6em 2em;background:#222;color:#888;border:none;border-radius:8px;font-size:.9rem;cursor:pointer}
+
+/* ===== GAME AREA ===== */
+#game{position:absolute;inset:0;display:none;flex-direction:column}
+#game.active{display:flex}
+.game-inner{flex:1;display:flex;flex-direction:row;position:relative;overflow:hidden}
+
+.player-side{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:clamp(6px,1.5vw,16px) clamp(4px,1vw,12px);position:relative;overflow:hidden;transition:background .15s}
+.p1-side{background:linear-gradient(135deg,#060620,#0a1040);border-right:1px solid #1a1a3a}
+.p2-side{background:linear-gradient(135deg,#200606,#401010);border-left:1px solid #3a1a1a}
+.p1-side.rotated{transform:rotate(180deg)}
+
+/* Flash overlays */
+.flash-overlay{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .15s;z-index:10}
+.p1-side .flash-overlay{background:radial-gradient(circle,rgba(0,100,255,.3),transparent)}
+.p2-side .flash-overlay{background:radial-gradient(circle,rgba(255,50,50,.3),transparent)}
+.flash-green .flash-overlay{background:radial-gradient(circle,rgba(0,255,100,.5),transparent)!important;opacity:1}
+.flash-red .flash-overlay{background:radial-gradient(circle,rgba(255,0,0,.4),transparent)!important;opacity:1}
+.flash-orange .flash-overlay{background:radial-gradient(circle,rgba(255,160,0,.5),transparent)!important;opacity:1}
+
+.player-label{font-size:clamp(.55rem,1.4vw,.8rem);text-transform:uppercase;letter-spacing:.25em;opacity:.5;font-weight:700}
+.p1-side .player-label{color:#4488ff}
+.p2-side .player-label{color:#ff4444}
+
+.score-display{font-size:clamp(2.2rem,9vw,5.5rem);font-weight:900;line-height:1;text-shadow:0 0 30px currentColor}
+.p1-side .score-display{color:#4488ff}
+.p2-side .score-display{color:#ff4444}
+
+.reaction-display{font-size:clamp(.8rem,2.2vw,1.2rem);font-weight:700;min-height:1.4em;display:flex;align-items:center;gap:.3em}
+.reaction-display .ms{font-variant-numeric:tabular-nums}
+.reaction-fast{color:#00ff88}
+.reaction-mid{color:#ffcc00}
+.reaction-slow{color:#ff4444}
+
+.streak-display{font-size:clamp(.6rem,1.5vw,.8rem);min-height:1.2em;color:#ffaa00;font-weight:700}
+
+.status-text{font-size:clamp(.65rem,1.8vw,.9rem);min-height:1.3em;font-weight:700;text-align:center;color:#ff8800}
+
+.grab-btn{width:clamp(65px,22vw,160px);height:clamp(65px,22vw,160px);border-radius:50%;border:4px solid;font-size:clamp(.85rem,2.5vw,1.4rem);font-weight:900;text-transform:uppercase;letter-spacing:.08em;cursor:pointer;transition:transform .08s,box-shadow .08s;position:relative;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.grab-btn:active{transform:scale(.88)!important}
+.grab-btn.disabled{opacity:.3;pointer-events:none}
+.p1-side .grab-btn{background:radial-gradient(circle at 35% 35%,#2255cc,#1133aa);border-color:#4488ff;color:#aaccff;box-shadow:0 0 30px rgba(68,136,255,.3),inset 0 -4px 10px rgba(0,0,0,.3)}
+.p1-side .grab-btn:active{box-shadow:0 0 50px rgba(68,136,255,.6),inset 0 -2px 5px rgba(0,0,0,.3)}
+.p2-side .grab-btn{background:radial-gradient(circle at 35% 35%,#cc2222,#aa1111);border-color:#ff4444;color:#ffaaaa;box-shadow:0 0 30px rgba(255,68,68,.3),inset 0 -4px 10px rgba(0,0,0,.3)}
+.p2-side .grab-btn:active{box-shadow:0 0 50px rgba(255,68,68,.6),inset 0 -2px 5px rgba(0,0,0,.3)}
+
+/* ===== CENTER ZONE ===== */
+.center-zone{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;display:flex;flex-direction:column;align-items:center;pointer-events:none}
+.object-container{font-size:clamp(2.2rem,7vw,4.5rem);width:1.5em;height:1.5em;display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(0);transition:none;position:relative}
+.object-container.appear{animation:objectAppear .25s cubic-bezier(.17,.67,.29,1.4) forwards}
+@keyframes objectAppear{0%{opacity:0;transform:scale(0) rotate(-20deg)}60%{opacity:1;transform:scale(1.3) rotate(5deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+.object-container.grabbed{animation:objectGrabbed .3s ease-out forwards}
+@keyframes objectGrabbed{to{opacity:0;transform:scale(2);filter:blur(8px)}}
+.object-glow{position:absolute;width:100px;height:100px;border-radius:50%;background:radial-gradient(circle,rgba(255,230,0,.4),transparent);filter:blur(20px);opacity:0;pointer-events:none}
+.object-container.appear .object-glow{animation:glowPulse 1s ease-in-out infinite}
+@keyframes glowPulse{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.3);opacity:1}}
+
+.center-text{position:absolute;left:50%;top:calc(50% - clamp(2.5rem,7vw,4.5rem));transform:translate(-50%,-50%);z-index:15;font-size:clamp(.85rem,2.5vw,1.3rem);font-weight:900;text-align:center;pointer-events:none;white-space:nowrap;text-shadow:0 0 20px rgba(255,255,255,.5)}
+
+.center-result{position:absolute;left:50%;top:calc(50% + clamp(2.5rem,7vw,4.5rem));transform:translate(-50%,-50%);z-index:15;font-size:clamp(.6rem,1.6vw,.85rem);font-weight:700;text-align:center;pointer-events:none;color:#ffaa00}
+
+/* Match point effects */
+.match-point-border{position:absolute;inset:0;pointer-events:none;z-index:5;border:3px solid transparent}
+.match-point-border.active{animation:matchPointPulse 1s ease-in-out infinite}
+@keyframes matchPointPulse{0%,100%{border-color:rgba(255,200,0,.15);box-shadow:inset 0 0 20px rgba(255,200,0,.03)}50%{border-color:rgba(255,200,0,.5);box-shadow:inset 0 0 40px rgba(255,200,0,.1)}}
+
+.match-point-text{position:absolute;top:30px;left:50%;transform:translateX(-50%);z-index:25;font-size:clamp(.55rem,1.3vw,.75rem);font-weight:900;color:#ffd700;letter-spacing:.3em;text-transform:uppercase;text-shadow:0 0 10px rgba(255,215,0,.5);opacity:0;pointer-events:none}
+.match-point-text.active{opacity:1;animation:matchTextPulse 1.5s ease-in-out infinite}
+@keyframes matchTextPulse{0%,100%{opacity:.5;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.08)}}
+
+/* ===== PARTICLES ===== */
+.particle{position:absolute;pointer-events:none;z-index:30;border-radius:50%}
+
+/* ===== VICTORY SCREEN ===== */
+#victory{position:absolute;inset:0;z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(5,5,15,.95)}
+#victory.active{display:flex}
+.victory-title{font-size:clamp(1.6rem,5vw,3rem);font-weight:900;margin-bottom:.2em}
+.victory-subtitle{font-size:clamp(.75rem,2vw,1rem);color:#888;margin-bottom:1.2em}
+.stats-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:.25em .6em;font-size:clamp(.6rem,1.5vw,.8rem);margin-bottom:1.3em;text-align:center}
+.stats-grid .stat-label{color:#666;grid-column:2}
+.stats-grid .p1-stat{color:#4488ff;text-align:right}
+.stats-grid .p2-stat{color:#ff4444;text-align:left}
+.victory-btn-row{display:flex;gap:.7em;flex-wrap:wrap;justify-content:center}
+.victory-btn{padding:.6em 1.6em;border-radius:10px;border:2px solid;font-size:clamp(.8rem,2vw,1rem);font-weight:700;cursor:pointer;transition:transform .1s}
+.victory-btn:active{transform:scale(.93)}
+.victory-btn.rematch{background:rgba(0,255,100,.15);border-color:#00ff66;color:#00ff66}
+.victory-btn.menu-back{background:rgba(255,255,255,.05);border-color:#444;color:#888}
+
+/* confetti canvas */
+#confetti{position:absolute;inset:0;pointer-events:none;z-index:190}
+
+/* ===== STATS OVERLAY ===== */
+#stats-overlay{position:absolute;inset:0;z-index:300;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(5,5,15,.97)}
+#stats-overlay.active{display:flex}
+.stats-title{font-size:1.3rem;font-weight:900;margin-bottom:1em;color:#00f0ff}
+.stats-list{text-align:center;line-height:2;font-size:.85rem;color:#aaa}
+.stats-list span{color:#fff;font-weight:700}
+.stats-close{margin-top:1.3em;padding:.5em 1.8em;border:1px solid #333;border-radius:8px;background:transparent;color:#666;font-size:.8rem;cursor:pointer}
+
+/* ===== OBJECT ANIMATIONS ===== */
+.obj-spin{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.obj-sparkle{animation:sparkle .8s ease-in-out infinite alternate}
+@keyframes sparkle{0%{filter:brightness(1) drop-shadow(0 0 5px #fff)}100%{filter:brightness(1.5) drop-shadow(0 0 15px #0ff)}}
+.obj-pulse{animation:pulse .6s ease-in-out infinite alternate}
+@keyframes pulse{0%{transform:scale(1)}100%{transform:scale(1.25)}}
+.obj-bounce{animation:bounce .5s ease-in-out infinite alternate}
+@keyframes bounce{0%{transform:translateY(0)}100%{transform:translateY(-10px)}}
+.obj-glow{animation:glowObj .7s ease-in-out infinite alternate}
+@keyframes glowObj{0%{filter:brightness(1) drop-shadow(0 0 5px #ff0)}100%{filter:brightness(1.4) drop-shadow(0 0 20px #ff0)}}
+.obj-rotate{animation:rotateObj 1.2s linear infinite}
+@keyframes rotateObj{to{transform:rotate(360deg)}}
+
+/* ===== FAKEOUT ===== */
+.fakeout-flash{animation:fakeout .15s ease-out}
+@keyframes fakeout{0%{filter:brightness(1)}50%{filter:brightness(1.12)}100%{filter:brightness(1)}}
+
+/* ===== REMOVE ADS ===== */
+.remove-ads{position:absolute;bottom:4px;right:8px;font-size:.5rem;color:#282828;cursor:pointer;z-index:50}
+
+/* ===== LANDSCAPE OPTIMIZATION ===== */
+@media (orientation:portrait){
+  .game-inner{flex-direction:column}
+  .p1-side{border-right:none;border-bottom:1px solid #1a1a3a}
+  .p2-side{border-left:none;border-top:1px solid #3a1a1a}
+  .p1-side.rotated{transform:rotate(180deg)}
+  .grab-btn{width:clamp(60px,18vw,130px);height:clamp(60px,18vw,130px)}
+}
+</style>
+</head>
+<body>
+
+<!-- MENU -->
+<div id="menu">
+  <div class="menu-title">QUICK GRAB</div>
+  <div class="menu-subtitle">2-Player Reflex Battle</div>
+
+  <div class="menu-section">
+    <h3>Game Mode</h3>
+    <div class="menu-btn-row" id="modeRow">
+      <div class="menu-btn sel" data-mode="classic">Classic</div>
+      <div class="menu-btn" data-mode="sudden">Sudden Death</div>
+      <div class="menu-btn" data-mode="marathon">Marathon</div>
+    </div>
+  </div>
+
+  <div class="menu-section" id="targetSection">
+    <h3>Points to Win</h3>
+    <div class="menu-btn-row" id="targetRow">
+      <div class="menu-btn" data-target="5">5</div>
+      <div class="menu-btn sel" data-target="10">10</div>
+      <div class="menu-btn" data-target="15">15</div>
+      <div class="menu-btn" data-target="20">20</div>
+    </div>
+  </div>
+
+  <div class="menu-btn big" id="startBtn">START GAME</div>
+  <div class="stats-btn" id="showStats">All-Time Stats</div>
+  <div class="remove-ads">Remove Ads $1.99</div>
+</div>
+
+<!-- STATS OVERLAY -->
+<div id="stats-overlay">
+  <div class="stats-title">ALL-TIME STATS</div>
+  <div class="stats-list" id="statsList"></div>
+  <div class="stats-close" id="closeStats">Close</div>
+</div>
+
+<!-- GAME -->
+<div id="game">
+  <div class="ad-banner">AD SPACE</div>
+  <div class="game-inner">
+    <!-- Player 1 (LEFT, rotated 180deg) -->
+    <div class="player-side p1-side rotated" id="p1Side">
+      <div class="flash-overlay"></div>
+      <div class="match-point-border" id="p1MatchBorder"></div>
+      <div class="player-label">Player 1</div>
+      <div class="streak-display" id="p1Streak"></div>
+      <div class="score-display" id="p1Score">0</div>
+      <div class="reaction-display" id="p1Reaction"></div>
+      <div class="status-text" id="p1Status"></div>
+      <div class="grab-btn disabled" id="p1Btn">GRAB</div>
+    </div>
+
+    <!-- Center zone -->
+    <div class="center-zone" id="centerZone">
+      <div class="object-container" id="objectContainer">
+        <div class="object-glow"></div>
+        <span id="objectEmoji"></span>
+      </div>
+    </div>
+    <div class="center-text" id="centerText"></div>
+    <div class="center-result" id="centerResult"></div>
+    <div class="match-point-text" id="matchPointText">MATCH POINT</div>
+
+    <!-- Player 2 (RIGHT) -->
+    <div class="player-side p2-side" id="p2Side">
+      <div class="flash-overlay"></div>
+      <div class="match-point-border" id="p2MatchBorder"></div>
+      <div class="player-label">Player 2</div>
+      <div class="streak-display" id="p2Streak"></div>
+      <div class="score-display" id="p2Score">0</div>
+      <div class="reaction-display" id="p2Reaction"></div>
+      <div class="status-text" id="p2Status"></div>
+      <div class="grab-btn disabled" id="p2Btn">GRAB</div>
+    </div>
+  </div>
+</div>
+
+<!-- VICTORY -->
+<canvas id="confetti"></canvas>
+<div id="victory">
+  <div class="victory-title" id="victoryTitle"></div>
+  <div class="victory-subtitle" id="victorySubtitle"></div>
+  <div class="stats-grid" id="victoryStats"></div>
+  <div class="victory-btn-row">
+    <div class="victory-btn rematch" id="rematchBtn">REMATCH</div>
+    <div class="victory-btn menu-back" id="menuBtn">MENU</div>
+  </div>
+</div>
+
+<!-- AD INTERSTITIAL -->
+<div class="ad-interstitial hidden" id="adInterstitial">
+  <div class="ad-box">AD PLACEHOLDER</div>
+  <div class="close-ad" id="closeAd">Skip Ad</div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+// ============ AUDIO ENGINE ============
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let actx;
+function ensureAudio(){
+  if(!actx) actx = new AudioCtx();
+  if(actx.state === 'suspended') actx.resume();
+}
+
+function playTone(freq, dur, type, vol, attack){
+  ensureAudio(); if(!actx) return;
+  type = type || 'sine'; vol = vol || .12; attack = attack || 0;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type; o.frequency.value = freq;
+  const now = actx.currentTime;
+  if(attack > 0){
+    g.gain.setValueAtTime(0, now);
+    g.gain.linearRampToValueAtTime(vol, now + attack);
+    g.gain.exponentialRampToValueAtTime(.001, now + dur);
+  } else {
+    g.gain.setValueAtTime(vol, now);
+    g.gain.exponentialRampToValueAtTime(.001, now + dur);
+  }
+  o.connect(g); g.connect(actx.destination);
+  o.start(now); o.stop(now + dur);
+}
+
+function playNoise(dur, vol){
+  ensureAudio(); if(!actx) return;
+  vol = vol || .06;
+  const len = Math.floor(actx.sampleRate * dur);
+  const buf = actx.createBuffer(1, len, actx.sampleRate);
+  const d = buf.getChannelData(0);
+  for(let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+  const s = actx.createBufferSource(), g = actx.createGain();
+  s.buffer = buf; g.gain.setValueAtTime(vol, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(.001, actx.currentTime + dur);
+  s.connect(g); g.connect(actx.destination); s.start();
+}
+
+const SFX = {
+  tick(){ playTone(900, .04, 'square', .04) },
+  appear(){
+    playTone(1400, .07, 'sine', .18);
+    setTimeout(()=> playTone(2100, .06, 'sine', .12), 35);
+    setTimeout(()=> playTone(2800, .04, 'sine', .08), 65);
+  },
+  grab(){
+    playTone(700, .06, 'sine', .12);
+    setTimeout(()=> playTone(1100, .05, 'sine', .1), 25);
+    playNoise(.1, .05);
+  },
+  falseStart(){
+    playTone(120, .35, 'sawtooth', .18);
+    playNoise(.18, .1);
+  },
+  point(){
+    playTone(523, .08, 'sine', .1);
+    setTimeout(()=> playTone(659, .08, 'sine', .1), 70);
+    setTimeout(()=> playTone(784, .1, 'sine', .1), 140);
+  },
+  matchPoint(){
+    [200, 220, 200, 220, 250, 300].forEach((f,i) =>
+      setTimeout(()=> playTone(f, .12, 'sine', .06), i * 150)
+    );
+  },
+  victory(){
+    [523, 523, 659, 784, 659, 784, 1047].forEach((f,i) =>
+      setTimeout(()=> playTone(f, .18, 'triangle', .1), i * 100)
+    );
+    setTimeout(()=> playNoise(.3, .04), 650);
+  },
+  click(){ playTone(500, .025, 'square', .04) }
+};
+
+// ============ VIBRATE ============
+function vib(pattern){ try{ navigator.vibrate && navigator.vibrate(pattern) }catch(e){} }
+
+// ============ STORAGE ============
+const STORE_KEY = 'quickgrab_stats';
+function loadStats(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY)) || {} }catch(e){ return {} } }
+function saveStats(s){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(s)) }catch(e){} }
+function getStats(){
+  const d = { fastestEver: Infinity, gamesPlayed: 0, p1Wins: 0, p2Wins: 0 };
+  return { ...d, ...loadStats() };
+}
+function updateStats(obj){ const s = getStats(); Object.assign(s, obj); saveStats(s) }
+
+// ============ OBJECTS ============
+const OBJECTS = [
+  { emoji: '\u{1FA99}', cls: 'obj-spin',    name: 'Gold Coin' },
+  { emoji: '\u{1F48E}', cls: 'obj-sparkle', name: 'Diamond' },
+  { emoji: '\u2B50',    cls: 'obj-pulse',   name: 'Star' },
+  { emoji: '\u{1F451}', cls: 'obj-bounce',  name: 'Crown' },
+  { emoji: '\u26A1',    cls: 'obj-glow',    name: 'Lightning' },
+  { emoji: '\u{1F534}', cls: 'obj-rotate',  name: 'Ruby' }
+];
+
+// ============ GAME STATE ============
+let mode = 'classic', targetScore = 10, totalRounds = 30;
+let p1Score = 0, p2Score = 0, roundNum = 0;
+let p1Times = [], p2Times = [], p1FalseStarts = 0, p2FalseStarts = 0;
+let p1Streak = 0, p2Streak = 0, p1MaxStreak = 0, p2MaxStreak = 0;
+let objectTime = 0, roundActive = false, objectShown = false, roundSettled = false;
+let p1Pressed = false, p2Pressed = false;
+let p1ReactionTime = 0, p2ReactionTime = 0;
+let roundTimer = null, fakeoutTimers = [];
+let matchesPlayed = 0;
+let nextRoundTimeout = null;
+
+// ============ DOM ============
+const $ = function(id){ return document.getElementById(id) };
+const menuEl = $('menu'), gameEl = $('game'), victoryEl = $('victory');
+const p1Side = $('p1Side'), p2Side = $('p2Side');
+const p1ScoreEl = $('p1Score'), p2ScoreEl = $('p2Score');
+const p1Btn = $('p1Btn'), p2Btn = $('p2Btn');
+const p1Reaction = $('p1Reaction'), p2Reaction = $('p2Reaction');
+const p1Status = $('p1Status'), p2Status = $('p2Status');
+const p1StreakEl = $('p1Streak'), p2StreakEl = $('p2Streak');
+const centerText = $('centerText'), centerResult = $('centerResult');
+const objContainer = $('objectContainer'), objEmoji = $('objectEmoji');
+const matchPointText = $('matchPointText');
+const p1MatchBorder = $('p1MatchBorder'), p2MatchBorder = $('p2MatchBorder');
+const confettiCanvas = $('confetti'), cctx = confettiCanvas.getContext('2d');
+
+// ============ MENU LOGIC ============
+document.querySelectorAll('#modeRow .menu-btn').forEach(function(b){
+  b.addEventListener('click', function(){
+    document.querySelectorAll('#modeRow .menu-btn').forEach(function(x){ x.classList.remove('sel') });
+    b.classList.add('sel');
+    mode = b.dataset.mode;
+    $('targetSection').style.display = mode === 'classic' ? '' : 'none';
+    SFX.click();
+  });
+});
+
+document.querySelectorAll('#targetRow .menu-btn').forEach(function(b){
+  b.addEventListener('click', function(){
+    document.querySelectorAll('#targetRow .menu-btn').forEach(function(x){ x.classList.remove('sel') });
+    b.classList.add('sel');
+    targetScore = parseInt(b.dataset.target);
+    SFX.click();
+  });
+});
+
+$('startBtn').addEventListener('click', startGame);
+$('showStats').addEventListener('click', showAllTimeStats);
+$('closeStats').addEventListener('click', function(){ $('stats-overlay').classList.remove('active') });
+$('rematchBtn').addEventListener('click', function(){
+  victoryEl.classList.remove('active'); stopConfetti(); startGame();
+});
+$('menuBtn').addEventListener('click', function(){
+  victoryEl.classList.remove('active'); stopConfetti(); showMenu();
+});
+$('closeAd').addEventListener('click', function(){
+  $('adInterstitial').classList.add('hidden');
+});
+
+function showMenu(){
+  clearAllTimers();
+  menuEl.classList.remove('hidden');
+  gameEl.classList.remove('active');
+  victoryEl.classList.remove('active');
+}
+
+function showAllTimeStats(){
+  const s = getStats();
+  $('statsList').innerHTML =
+    'Fastest Reaction Ever: <span>' + (s.fastestEver === Infinity ? '---' : s.fastestEver + 'ms') + '</span><br>' +
+    'Games Played: <span>' + (s.gamesPlayed || 0) + '</span><br>' +
+    'P1 Wins: <span>' + (s.p1Wins || 0) + '</span><br>' +
+    'P2 Wins: <span>' + (s.p2Wins || 0) + '</span>';
+  $('stats-overlay').classList.add('active');
+}
+
+// ============ GAME START ============
+function startGame(){
+  ensureAudio();
+  menuEl.classList.add('hidden');
+  victoryEl.classList.remove('active');
+  gameEl.classList.add('active');
+
+  if(mode === 'sudden'){ targetScore = 1; totalRounds = 1 }
+  else if(mode === 'marathon'){ targetScore = 9999; totalRounds = 30 }
+  else { totalRounds = 9999 }
+
+  p1Score = 0; p2Score = 0; roundNum = 0;
+  p1Times = []; p2Times = []; p1FalseStarts = 0; p2FalseStarts = 0;
+  p1Streak = 0; p2Streak = 0; p1MaxStreak = 0; p2MaxStreak = 0;
+  updateScores(); clearReactions(); clearStreaks(); clearStatuses();
+  matchPointText.classList.remove('active');
+  p1MatchBorder.classList.remove('active');
+  p2MatchBorder.classList.remove('active');
+
+  setTimeout(startRound, 600);
+}
+
+// ============ ROUND ============
+function startRound(){
+  roundNum++;
+  roundActive = true; objectShown = false; roundSettled = false;
+  p1Pressed = false; p2Pressed = false;
+  p1ReactionTime = 0; p2ReactionTime = 0;
+  clearTimers();
+  clearFlashes(); clearReactions(); clearStatuses();
+  hideObject();
+  centerResult.textContent = '';
+
+  // Check match point
+  checkMatchPoint();
+
+  // Enable buttons (for false start detection)
+  enableBtns();
+
+  centerText.textContent = 'Get Ready...';
+  centerText.style.color = '#666';
+
+  // Tick sounds
+  SFX.tick();
+
+  // Random delay with optional fakeouts
+  const delay = 1500 + Math.random() * 3500;
+  const numFakeouts = Math.random() < 0.35 ? 1 : (Math.random() < 0.15 ? 2 : 0);
+
+  for(let i = 0; i < numFakeouts; i++){
+    const ft = setTimeout(function(){
+      if(!roundSettled && !objectShown){
+        p1Side.classList.add('fakeout-flash');
+        p2Side.classList.add('fakeout-flash');
+        setTimeout(function(){
+          p1Side.classList.remove('fakeout-flash');
+          p2Side.classList.remove('fakeout-flash');
+        }, 150);
+      }
+    }, 600 + Math.random() * (delay - 800));
+    fakeoutTimers.push(ft);
+  }
+
+  roundTimer = setTimeout(function(){
+    if(roundSettled) return;
+    showObjectNow();
+  }, delay);
+}
+
+function showObjectNow(){
+  objectShown = true;
+  objectTime = performance.now();
+  const obj = OBJECTS[Math.floor(Math.random() * OBJECTS.length)];
+  objEmoji.textContent = obj.emoji;
+  objEmoji.className = obj.cls;
+  objContainer.className = 'object-container appear';
+  centerText.textContent = 'GRAB!';
+  centerText.style.color = '#ffe600';
+  SFX.appear();
+  spawnParticles(window.innerWidth / 2, window.innerHeight / 2, 10, '#ffe600');
+}
+
+function hideObject(){
+  objContainer.className = 'object-container';
+  objEmoji.textContent = '';
+  objEmoji.className = '';
+}
+
+// ============ BUTTON HANDLERS ============
+function onP1Grab(e){
+  e.preventDefault(); e.stopPropagation();
+  if(roundSettled || p1Pressed || !roundActive) return;
+  SFX.click(); vib(15);
+  p1Pressed = true;
+
+  if(!objectShown){
+    handleFalseStart(1);
+    return;
+  }
+  const rt = Math.round(performance.now() - objectTime);
+  if(rt < 100){ handleFalseStart(1); return }
+
+  p1ReactionTime = rt;
+  p1Times.push(rt);
+  showReaction(1, rt);
+
+  if(!p2Pressed){
+    // P1 wins this round
+    settleRound(1, rt);
+  } else {
+    // Both pressed - compare times
+    if(rt <= p2ReactionTime){
+      settleRound(1, rt);
+    } else {
+      settleRound(2, p2ReactionTime);
+    }
+  }
+}
+
+function onP2Grab(e){
+  e.preventDefault(); e.stopPropagation();
+  if(roundSettled || p2Pressed || !roundActive) return;
+  SFX.click(); vib(15);
+  p2Pressed = true;
+
+  if(!objectShown){
+    handleFalseStart(2);
+    return;
+  }
+  const rt = Math.round(performance.now() - objectTime);
+  if(rt < 100){ handleFalseStart(2); return }
+
+  p2ReactionTime = rt;
+  p2Times.push(rt);
+  showReaction(2, rt);
+
+  if(!p1Pressed){
+    settleRound(2, rt);
+  } else {
+    if(rt <= p1ReactionTime){
+      settleRound(2, rt);
+    } else {
+      settleRound(1, p1ReactionTime);
+    }
+  }
+}
+
+// Bind both touch and mouse events
+p1Btn.addEventListener('touchstart', onP1Grab, { passive: false });
+p1Btn.addEventListener('mousedown', onP1Grab);
+p2Btn.addEventListener('touchstart', onP2Grab, { passive: false });
+p2Btn.addEventListener('mousedown', onP2Grab);
+
+// ============ FALSE START ============
+function handleFalseStart(player){
+  roundSettled = true; roundActive = false;
+  clearTimers(); hideObject();
+  SFX.falseStart(); vib([80, 40, 80]);
+
+  if(player === 1){
+    p1FalseStarts++;
+    p1Score = Math.max(0, p1Score - 1);
+    p2Score++;
+    flashSide(1, 'orange'); flashSide(2, 'green');
+    p1Status.textContent = 'TOO EARLY!';
+    p2Status.textContent = '+1 FREE';
+    p1Streak = 0; p2Streak++;
+    if(p2Streak > p2MaxStreak) p2MaxStreak = p2Streak;
+  } else {
+    p2FalseStarts++;
+    p2Score = Math.max(0, p2Score - 1);
+    p1Score++;
+    flashSide(2, 'orange'); flashSide(1, 'green');
+    p2Status.textContent = 'TOO EARLY!';
+    p1Status.textContent = '+1 FREE';
+    p2Streak = 0; p1Streak++;
+    if(p1Streak > p1MaxStreak) p1MaxStreak = p1Streak;
+  }
+
+  updateScores(); updateStreaks();
+  centerText.textContent = 'FALSE START!';
+  centerText.style.color = '#ff8800';
+  disableBtns();
+
+  SFX.point();
+
+  if(checkWin()) return;
+
+  // Extra random delay after false start
+  nextRoundTimeout = setTimeout(startRound, 2200 + Math.random() * 1200);
+}
+
+// ============ SETTLE ROUND ============
+function settleRound(winner, winnerTime){
+  if(roundSettled) return;
+  roundSettled = true; roundActive = false;
+  clearTimers();
+  SFX.grab();
+  objContainer.classList.remove('appear');
+  objContainer.classList.add('grabbed');
+
+  if(winner === 1){
+    p1Score++; flashSide(1, 'green'); flashSide(2, 'red');
+    p1Streak++; p2Streak = 0;
+    if(p1Streak > p1MaxStreak) p1MaxStreak = p1Streak;
+  } else {
+    p2Score++; flashSide(2, 'green'); flashSide(1, 'red');
+    p2Streak++; p1Streak = 0;
+    if(p2Streak > p2MaxStreak) p2MaxStreak = p2Streak;
+  }
+
+  updateScores(); updateStreaks();
+  SFX.point(); vib(30);
+
+  // Show time difference if both pressed
+  const loserTime = winner === 1 ? p2ReactionTime : p1ReactionTime;
+  if(loserTime > 0){
+    const diff = Math.abs(loserTime - winnerTime);
+    centerResult.textContent = 'Won by ' + diff + 'ms!';
+    centerResult.style.color = diff < 20 ? '#ff4444' : '#ffaa00';
+  } else {
+    centerResult.textContent = '';
+  }
+
+  centerText.textContent = 'Player ' + winner + ' grabs it!';
+  centerText.style.color = winner === 1 ? '#4488ff' : '#ff4444';
+  disableBtns();
+
+  // Spawn celebration particles on winner side
+  const rect = (winner === 1 ? p1Side : p2Side).getBoundingClientRect();
+  spawnParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, 12,
+    winner === 1 ? '#4488ff' : '#ff4444');
+
+  // Update fastest ever
+  const s = getStats();
+  if(winnerTime < (s.fastestEver || Infinity)){
+    updateStats({ fastestEver: winnerTime });
+  }
+
+  if(checkWin()) return;
+
+  // Marathon round limit
+  if(mode === 'marathon' && roundNum >= totalRounds){
+    setTimeout(function(){ endGame() }, 1000);
+    return;
+  }
+
+  nextRoundTimeout = setTimeout(startRound, 1800);
+}
+
+// ============ WIN CHECK ============
+function checkWin(){
+  if(mode === 'marathon') return false;
+  if(p1Score >= targetScore){ setTimeout(function(){ endGame(1) }, 800); return true }
+  if(p2Score >= targetScore){ setTimeout(function(){ endGame(2) }, 800); return true }
+  return false;
+}
+
+function checkMatchPoint(){
+  const need = mode === 'marathon' ? 9999 : targetScore;
+  const isMP1 = p1Score === need - 1 && need > 1;
+  const isMP2 = p2Score === need - 1 && need > 1;
+  p1MatchBorder.classList.toggle('active', isMP1);
+  p2MatchBorder.classList.toggle('active', isMP2);
+  matchPointText.classList.toggle('active', isMP1 || isMP2);
+  if((isMP1 || isMP2) && roundNum > 1) SFX.matchPoint();
+}
+
+// ============ END GAME ============
+function endGame(winner){
+  roundSettled = true; disableBtns(); clearAllTimers();
+  matchesPlayed++;
+
+  // Marathon: determine winner by score
+  if(winner === undefined){
+    winner = p1Score > p2Score ? 1 : (p2Score > p1Score ? 2 : 0);
+  }
+
+  const s = getStats();
+  updateStats({
+    gamesPlayed: (s.gamesPlayed || 0) + 1,
+    p1Wins: (s.p1Wins || 0) + (winner === 1 ? 1 : 0),
+    p2Wins: (s.p2Wins || 0) + (winner === 2 ? 1 : 0)
+  });
+
+  SFX.victory(); vib([50, 30, 50, 30, 100]);
+  showVictory(winner);
+
+  // Interstitial ad every 3 matches
+  if(matchesPlayed > 0 && matchesPlayed % 3 === 0){
+    setTimeout(function(){
+      $('adInterstitial').classList.remove('hidden');
+    }, 3500);
+  }
+}
+
+function showVictory(winner){
+  victoryEl.classList.add('active');
+  const vtitle = $('victoryTitle');
+  const vsub = $('victorySubtitle');
+
+  if(winner === 0){
+    vtitle.textContent = "IT'S A TIE!";
+    vtitle.style.color = '#ffcc00';
+    vsub.textContent = p1Score + ' - ' + p2Score;
+  } else {
+    vtitle.textContent = 'PLAYER ' + winner + ' WINS!';
+    vtitle.style.color = winner === 1 ? '#4488ff' : '#ff4444';
+    vsub.textContent = p1Score + ' - ' + p2Score;
+  }
+
+  function avg(arr){ return arr.length ? Math.round(arr.reduce(function(a,b){ return a+b },0) / arr.length) : '-' }
+  function fastest(arr){ return arr.length ? Math.min.apply(null, arr) : '-' }
+
+  $('victoryStats').innerHTML =
+    '<div class="p1-stat">' + avg(p1Times) + (p1Times.length ? 'ms' : '') + '</div>' +
+    '<div class="stat-label">Avg Reaction</div>' +
+    '<div class="p2-stat">' + avg(p2Times) + (p2Times.length ? 'ms' : '') + '</div>' +
+
+    '<div class="p1-stat">' + fastest(p1Times) + (p1Times.length ? 'ms' : '') + '</div>' +
+    '<div class="stat-label">Fastest</div>' +
+    '<div class="p2-stat">' + fastest(p2Times) + (p2Times.length ? 'ms' : '') + '</div>' +
+
+    '<div class="p1-stat">' + p1FalseStarts + '</div>' +
+    '<div class="stat-label">False Starts</div>' +
+    '<div class="p2-stat">' + p2FalseStarts + '</div>' +
+
+    '<div class="p1-stat">' + p1MaxStreak + '</div>' +
+    '<div class="stat-label">Best Streak</div>' +
+    '<div class="p2-stat">' + p2MaxStreak + '</div>' +
+
+    (winner ? ('<div class="p1-stat">' + (winner === 1 ? 'MVP' : '') + '</div>' +
+    '<div class="stat-label"></div>' +
+    '<div class="p2-stat">' + (winner === 2 ? 'MVP' : '') + '</div>') : '');
+
+  startConfetti();
+}
+
+// ============ UI HELPERS ============
+function enableBtns(){ p1Btn.classList.remove('disabled'); p2Btn.classList.remove('disabled') }
+function disableBtns(){ p1Btn.classList.add('disabled'); p2Btn.classList.add('disabled') }
+
+function updateScores(){
+  p1ScoreEl.textContent = p1Score;
+  p2ScoreEl.textContent = p2Score;
+
+  // Add tension glow when scores are close and high
+  const maxS = Math.max(p1Score, p2Score);
+  const need = mode === 'marathon' ? 9999 : targetScore;
+  if(maxS >= need - 2 && Math.abs(p1Score - p2Score) <= 2 && maxS > 2){
+    document.querySelector('.game-inner').style.boxShadow = 'inset 0 0 60px rgba(255,200,0,.08)';
+  } else {
+    document.querySelector('.game-inner').style.boxShadow = '';
+  }
+}
+
+function showReaction(p, ms){
+  const el = p === 1 ? p1Reaction : p2Reaction;
+  const cls = ms < 200 ? 'reaction-fast' : (ms < 350 ? 'reaction-mid' : 'reaction-slow');
+  el.innerHTML = '<span class="ms ' + cls + '">' + ms + 'ms</span>';
+}
+
+function clearReactions(){ p1Reaction.textContent = ''; p2Reaction.textContent = '' }
+
+function updateStreaks(){
+  p1StreakEl.textContent = p1Streak >= 3 ? '\uD83D\uDD25 ' + p1Streak + ' streak!' : '';
+  p2StreakEl.textContent = p2Streak >= 3 ? '\uD83D\uDD25 ' + p2Streak + ' streak!' : '';
+}
+
+function clearStreaks(){ p1StreakEl.textContent = ''; p2StreakEl.textContent = '' }
+function clearStatuses(){ p1Status.textContent = ''; p2Status.textContent = '' }
+
+function flashSide(p, color){
+  const side = p === 1 ? p1Side : p2Side;
+  side.classList.add('flash-' + color);
+  setTimeout(function(){ side.classList.remove('flash-' + color) }, 700);
+}
+
+function clearFlashes(){
+  ['flash-green', 'flash-red', 'flash-orange'].forEach(function(c){
+    p1Side.classList.remove(c);
+    p2Side.classList.remove(c);
+  });
+}
+
+function clearTimers(){
+  clearTimeout(roundTimer);
+  fakeoutTimers.forEach(clearTimeout);
+  fakeoutTimers = [];
+}
+
+function clearAllTimers(){
+  clearTimers();
+  clearTimeout(nextRoundTimeout);
+}
+
+// ============ PARTICLES ============
+function spawnParticles(cx, cy, count, color){
+  for(let i = 0; i < count; i++){
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const sz = 3 + Math.random() * 5;
+    p.style.cssText = 'width:' + sz + 'px;height:' + sz + 'px;background:' + color +
+      ';left:' + cx + 'px;top:' + cy + 'px;opacity:1';
+    document.body.appendChild(p);
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 30 + Math.random() * 70;
+    const dx = Math.cos(angle) * dist;
+    const dy = Math.sin(angle) * dist;
+    const dur = 300 + Math.random() * 400;
+    const start = performance.now();
+    (function animP(t){
+      const prog = Math.min(1, (t - start) / dur);
+      const ease = 1 - Math.pow(1 - prog, 3);
+      p.style.transform = 'translate(' + (dx * ease) + 'px,' + (dy * ease - 15 * ease) + 'px)';
+      p.style.opacity = String(1 - prog);
+      if(prog < 1) requestAnimationFrame(animP);
+      else p.remove();
+    })(start);
+  }
+}
+
+// ============ CONFETTI ============
+let confettiPieces = [];
+let confettiRunning = false;
+
+function startConfetti(){
+  confettiCanvas.width = window.innerWidth;
+  confettiCanvas.height = window.innerHeight;
+  confettiPieces = [];
+  confettiRunning = true;
+  for(let i = 0; i < 100; i++){
+    confettiPieces.push({
+      x: Math.random() * confettiCanvas.width,
+      y: -10 - Math.random() * confettiCanvas.height * .8,
+      w: 5 + Math.random() * 5,
+      h: 8 + Math.random() * 7,
+      color: 'hsl(' + Math.floor(Math.random() * 360) + ',85%,60%)',
+      vy: 1.5 + Math.random() * 2.5,
+      vx: (Math.random() - .5) * 2,
+      rot: Math.random() * 360,
+      rv: (Math.random() - .5) * 8
+    });
+  }
+  animConfetti();
+}
+
+function animConfetti(){
+  if(!confettiRunning) return;
+  cctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+  let alive = false;
+  for(let i = 0; i < confettiPieces.length; i++){
+    const p = confettiPieces[i];
+    p.y += p.vy; p.x += p.vx; p.rot += p.rv; p.vy += .04;
+    if(p.y < confettiCanvas.height + 40) alive = true;
+    cctx.save();
+    cctx.translate(p.x, p.y);
+    cctx.rotate(p.rot * Math.PI / 180);
+    cctx.fillStyle = p.color;
+    cctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+    cctx.restore();
+  }
+  if(alive) requestAnimationFrame(animConfetti);
+  else confettiRunning = false;
+}
+
+function stopConfetti(){
+  confettiRunning = false;
+  cctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+}
+
+// ============ PREVENT DEFAULTS ============
+document.addEventListener('touchmove', function(e){ e.preventDefault() }, { passive: false });
+document.addEventListener('dblclick', function(e){ e.preventDefault() });
+
+// ============ RESIZE ============
+window.addEventListener('resize', function(){
+  if(confettiRunning){
+    confettiCanvas.width = window.innerWidth;
+    confettiCanvas.height = window.innerHeight;
+  }
+});
+
+})();
+</script>
+</body>
+</html>

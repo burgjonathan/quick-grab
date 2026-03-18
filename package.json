@@ -1,0 +1,12 @@
+{
+  "name": "quick-grab",
+  "version": "1.0.0",
+  "description": "Quick Grab - 2 Player Reflex Battle Game",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}
