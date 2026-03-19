@@ -10,12 +10,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0a12;font-family:
 body{display:flex;flex-direction:column;position:fixed;top:0;left:0;right:0;bottom:0}
 
 /* ===== MENU ===== */
-#menu{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;background:#0a0a12}
+#menu{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;background:#0a0a12;overflow-y:auto;padding:1em 0}
 #menu.hidden{display:none}
-.menu-title{font-size:clamp(2.5rem,8vw,5rem);font-weight:900;letter-spacing:.15em;text-transform:uppercase;background:linear-gradient(135deg,#00f0ff,#ff00e5,#ffe600);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 30px rgba(0,240,255,.5)) drop-shadow(0 0 60px rgba(255,0,229,.3));animation:menuGlow 2s ease-in-out infinite alternate;margin-bottom:.2em}
+.menu-title{font-size:clamp(2.5rem,8vw,5rem);font-weight:900;letter-spacing:.15em;text-transform:uppercase;background:linear-gradient(135deg,#00f0ff,#ff00e5,#ffe600);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 30px rgba(0,240,255,.5)) drop-shadow(0 0 60px rgba(255,0,229,.3));animation:menuGlow 2s ease-in-out infinite alternate;margin-bottom:.1em}
 @keyframes menuGlow{0%{filter:drop-shadow(0 0 30px rgba(0,240,255,.5)) drop-shadow(0 0 60px rgba(255,0,229,.3))}100%{filter:drop-shadow(0 0 50px rgba(0,240,255,.8)) drop-shadow(0 0 80px rgba(255,0,229,.6))}}
-.menu-subtitle{font-size:clamp(.75rem,2.2vw,1.1rem);color:#888;margin-bottom:1.8em;letter-spacing:.3em;text-transform:uppercase}
-.menu-section{margin-bottom:1.3em;text-align:center}
+.menu-subtitle{font-size:clamp(.75rem,2.2vw,1.1rem);color:#888;margin-bottom:1.2em;letter-spacing:.3em;text-transform:uppercase}
+.menu-section{margin-bottom:1em;text-align:center}
 .menu-section h3{font-size:.8rem;color:#555;text-transform:uppercase;letter-spacing:.2em;margin-bottom:.5em}
 .menu-btn-row{display:flex;gap:.5em;justify-content:center;flex-wrap:wrap}
 .menu-btn{padding:.6em 1.3em;border:2px solid #333;border-radius:12px;background:rgba(255,255,255,.05);color:#ccc;font-size:clamp(.8rem,2vw,1rem);font-weight:700;cursor:pointer;transition:all .15s}
@@ -25,6 +25,39 @@ body{display:flex;flex-direction:column;position:fixed;top:0;left:0;right:0;bott
 .menu-btn.big:active{background:rgba(0,240,255,.3);transform:scale(.93)}
 .stats-btn{margin-top:1.2em;padding:.4em 1em;border:1px solid #333;border-radius:8px;background:transparent;color:#555;font-size:.75rem;cursor:pointer}
 .stats-btn:active{color:#aaa}
+
+/* ===== PLAY MODE CARDS ===== */
+.play-mode-row{display:flex;gap:.7em;justify-content:center;flex-wrap:wrap;margin-bottom:.5em}
+.play-mode-card{width:clamp(90px,25vw,130px);padding:1em .5em;border:2px solid #333;border-radius:16px;background:rgba(255,255,255,.03);cursor:pointer;transition:all .2s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:.4em}
+.play-mode-card:active{transform:scale(.93)}
+.play-mode-card.sel{border-color:#00f0ff;background:rgba(0,240,255,.1);box-shadow:0 0 25px rgba(0,240,255,.2)}
+.play-mode-icon{font-size:clamp(1.8rem,5vw,2.5rem)}
+.play-mode-label{font-size:clamp(.6rem,1.6vw,.8rem);font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#aaa}
+.play-mode-card.sel .play-mode-label{color:#00f0ff}
+.play-mode-desc{font-size:clamp(.45rem,1.1vw,.6rem);color:#555;line-height:1.3}
+
+/* ===== ONLINE LOBBY ===== */
+#lobby{position:absolute;inset:0;z-index:150;display:none;flex-direction:column;align-items:center;justify-content:center;background:#0a0a12}
+#lobby.active{display:flex}
+.lobby-title{font-size:clamp(1.2rem,4vw,2rem);font-weight:900;color:#00f0ff;margin-bottom:.5em}
+.lobby-subtitle{font-size:clamp(.7rem,2vw,.9rem);color:#666;margin-bottom:1.5em}
+.lobby-btn-row{display:flex;gap:1em;margin-bottom:1.5em}
+.lobby-btn{padding:.8em 1.8em;border:2px solid;border-radius:12px;font-size:clamp(.85rem,2.2vw,1.1rem);font-weight:700;cursor:pointer;transition:all .15s}
+.lobby-btn:active{transform:scale(.93)}
+.lobby-btn.create{border-color:#00ff88;color:#00ff88;background:rgba(0,255,136,.1)}
+.lobby-btn.join{border-color:#ff8800;color:#ff8800;background:rgba(255,136,0,.1)}
+.lobby-back{padding:.5em 1.5em;border:1px solid #333;border-radius:8px;background:transparent;color:#666;font-size:.8rem;cursor:pointer;margin-top:1em}
+.lobby-section{text-align:center;margin-bottom:1em;display:none}
+.lobby-section.active{display:block}
+.room-code-display{font-size:clamp(2rem,8vw,4rem);font-weight:900;letter-spacing:.3em;color:#00ff88;font-family:monospace;margin:.3em 0}
+.room-code-input{width:180px;padding:.7em;text-align:center;font-size:1.2rem;font-weight:900;letter-spacing:.3em;background:rgba(255,255,255,.08);border:2px solid #444;border-radius:10px;color:#fff;font-family:monospace;outline:none}
+.room-code-input:focus{border-color:#ff8800}
+.room-code-input::placeholder{color:#333;letter-spacing:.1em}
+.lobby-go{padding:.6em 2em;border:2px solid #ff8800;border-radius:10px;background:rgba(255,136,0,.15);color:#ff8800;font-size:1rem;font-weight:700;cursor:pointer;margin-top:.8em}
+.lobby-status{font-size:clamp(.7rem,2vw,.9rem);color:#888;margin-top:.8em;min-height:1.5em}
+.lobby-status.error{color:#ff4444}
+.waiting-dots::after{content:'';animation:dots 1.5s steps(4,end) infinite}
+@keyframes dots{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}}
 
 /* ===== AD PLACEHOLDERS ===== */
 .ad-banner{height:28px;min-height:28px;background:rgba(255,255,255,.03);border-bottom:1px solid #151520;display:flex;align-items:center;justify-content:center;font-size:.55rem;color:#282828;letter-spacing:.1em;flex-shrink:0;position:relative;z-index:50}
@@ -76,6 +109,10 @@ body{display:flex;flex-direction:column;position:fixed;top:0;left:0;right:0;bott
 .p1-side .grab-btn:active{box-shadow:0 0 50px rgba(68,136,255,.6),inset 0 -2px 5px rgba(0,0,0,.3)}
 .p2-side .grab-btn{background:radial-gradient(circle at 35% 35%,#cc2222,#aa1111);border-color:#ff4444;color:#ffaaaa;box-shadow:0 0 30px rgba(255,68,68,.3),inset 0 -4px 10px rgba(0,0,0,.3)}
 .p2-side .grab-btn:active{box-shadow:0 0 50px rgba(255,68,68,.6),inset 0 -2px 5px rgba(0,0,0,.3)}
+
+/* Bot grab btn styling */
+.p2-side .grab-btn.bot-btn{opacity:.5;pointer-events:none;position:relative}
+.p2-side .grab-btn.bot-btn::after{content:'BOT';position:absolute;font-size:.5em;bottom:-1.5em;color:#ff6666;letter-spacing:.15em}
 
 /* ===== CENTER ZONE ===== */
 .center-zone{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;display:flex;flex-direction:column;align-items:center;pointer-events:none}
@@ -166,7 +203,38 @@ body{display:flex;flex-direction:column;position:fixed;top:0;left:0;right:0;bott
 <!-- MENU -->
 <div id="menu">
   <div class="menu-title">QUICK GRAB</div>
-  <div class="menu-subtitle">2-Player Reflex Battle</div>
+  <div class="menu-subtitle">Reflex Battle</div>
+
+  <div class="menu-section">
+    <h3>Play Mode</h3>
+    <div class="play-mode-row" id="playModeRow">
+      <div class="play-mode-card sel" data-playmode="bot">
+        <div class="play-mode-icon">&#129302;</div>
+        <div class="play-mode-label">VS Bot</div>
+        <div class="play-mode-desc">Challenge the AI</div>
+      </div>
+      <div class="play-mode-card" data-playmode="online">
+        <div class="play-mode-icon">&#127760;</div>
+        <div class="play-mode-label">Online</div>
+        <div class="play-mode-desc">Play a friend</div>
+      </div>
+      <div class="play-mode-card" data-playmode="local">
+        <div class="play-mode-icon">&#127918;</div>
+        <div class="play-mode-label">Same Device</div>
+        <div class="play-mode-desc">2 players, 1 screen</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="menu-section" id="difficultySection">
+    <h3>Bot Difficulty</h3>
+    <div class="menu-btn-row" id="difficultyRow">
+      <div class="menu-btn" data-diff="easy">Easy</div>
+      <div class="menu-btn sel" data-diff="medium">Medium</div>
+      <div class="menu-btn" data-diff="hard">Hard</div>
+      <div class="menu-btn" data-diff="impossible">Insane</div>
+    </div>
+  </div>
 
   <div class="menu-section">
     <h3>Game Mode</h3>
@@ -192,6 +260,33 @@ body{display:flex;flex-direction:column;position:fixed;top:0;left:0;right:0;bott
   <div class="remove-ads">Remove Ads $1.99</div>
 </div>
 
+<!-- ONLINE LOBBY -->
+<div id="lobby">
+  <div class="lobby-title">ONLINE MODE</div>
+  <div class="lobby-subtitle">Play with a friend anywhere</div>
+
+  <div class="lobby-btn-row" id="lobbyChoices">
+    <div class="lobby-btn create" id="createRoomBtn">CREATE ROOM</div>
+    <div class="lobby-btn join" id="joinRoomBtn">JOIN ROOM</div>
+  </div>
+
+  <div class="lobby-section" id="createSection">
+    <div style="color:#666;font-size:.8rem;margin-bottom:.3em">Share this code with your friend:</div>
+    <div class="room-code-display" id="roomCodeDisplay">----</div>
+    <div class="lobby-status">Waiting for opponent<span class="waiting-dots"></span></div>
+  </div>
+
+  <div class="lobby-section" id="joinSection">
+    <div style="color:#666;font-size:.8rem;margin-bottom:.5em">Enter room code:</div>
+    <input class="room-code-input" id="roomCodeInput" type="text" maxlength="4" placeholder="CODE" autocomplete="off" autocorrect="off" autocapitalize="characters">
+    <br>
+    <div class="lobby-go" id="joinGoBtn">JOIN</div>
+    <div class="lobby-status" id="joinStatus"></div>
+  </div>
+
+  <div class="lobby-back" id="lobbyBack">Back to Menu</div>
+</div>
+
 <!-- STATS OVERLAY -->
 <div id="stats-overlay">
   <div class="stats-title">ALL-TIME STATS</div>
@@ -203,11 +298,11 @@ body{display:flex;flex-direction:column;position:fixed;top:0;left:0;right:0;bott
 <div id="game">
   <div class="ad-banner">AD SPACE</div>
   <div class="game-inner">
-    <!-- Player 1 (LEFT, rotated 180deg) -->
-    <div class="player-side p1-side rotated" id="p1Side">
+    <!-- Player 1 (LEFT, rotated 180deg in local mode) -->
+    <div class="player-side p1-side" id="p1Side">
       <div class="flash-overlay"></div>
       <div class="match-point-border" id="p1MatchBorder"></div>
-      <div class="player-label">Player 1</div>
+      <div class="player-label" id="p1Label">Player 1</div>
       <div class="streak-display" id="p1Streak"></div>
       <div class="score-display" id="p1Score">0</div>
       <div class="reaction-display" id="p1Reaction"></div>
@@ -230,7 +325,7 @@ body{display:flex;flex-direction:column;position:fixed;top:0;left:0;right:0;bott
     <div class="player-side p2-side" id="p2Side">
       <div class="flash-overlay"></div>
       <div class="match-point-border" id="p2MatchBorder"></div>
-      <div class="player-label">Player 2</div>
+      <div class="player-label" id="p2Label">Player 2</div>
       <div class="streak-display" id="p2Streak"></div>
       <div class="score-display" id="p2Score">0</div>
       <div class="reaction-display" id="p2Reaction"></div>
@@ -258,6 +353,7 @@ body{display:flex;flex-direction:column;position:fixed;top:0;left:0;right:0;bott
   <div class="close-ad" id="closeAd">Skip Ad</div>
 </div>
 
+<script src="/socket.io/socket.io.js"></script>
 <script>
 (function(){
 'use strict';
@@ -359,7 +455,17 @@ const OBJECTS = [
   { emoji: '\u{1F534}', cls: 'obj-rotate',  name: 'Ruby' }
 ];
 
+// ============ BOT CONFIG ============
+const BOT_DIFFICULTY = {
+  easy:       { minRT: 400, maxRT: 800, falseStartChance: 0.02, missChance: 0.15 },
+  medium:     { minRT: 250, maxRT: 450, falseStartChance: 0.04, missChance: 0.05 },
+  hard:       { minRT: 170, maxRT: 300, falseStartChance: 0.06, missChance: 0.02 },
+  impossible: { minRT: 110, maxRT: 200, falseStartChance: 0.08, missChance: 0.00 }
+};
+
 // ============ GAME STATE ============
+let playMode = 'bot'; // 'bot', 'online', 'local'
+let botDifficulty = 'medium';
 let mode = 'classic', targetScore = 10, totalRounds = 30;
 let p1Score = 0, p2Score = 0, roundNum = 0;
 let p1Times = [], p2Times = [], p1FalseStarts = 0, p2FalseStarts = 0;
@@ -370,21 +476,52 @@ let p1ReactionTime = 0, p2ReactionTime = 0;
 let roundTimer = null, fakeoutTimers = [];
 let matchesPlayed = 0;
 let nextRoundTimeout = null;
+let botTimer = null;
+let botFalseStartTimer = null;
+
+// Online state
+let socket = null;
+let roomCode = null;
+let isHost = false;
+let onlinePlayerNum = 0; // 1 or 2
+let onlineReady = false;
 
 // ============ DOM ============
 const $ = function(id){ return document.getElementById(id) };
-const menuEl = $('menu'), gameEl = $('game'), victoryEl = $('victory');
+const menuEl = $('menu'), gameEl = $('game'), victoryEl = $('victory'), lobbyEl = $('lobby');
 const p1Side = $('p1Side'), p2Side = $('p2Side');
 const p1ScoreEl = $('p1Score'), p2ScoreEl = $('p2Score');
 const p1Btn = $('p1Btn'), p2Btn = $('p2Btn');
 const p1Reaction = $('p1Reaction'), p2Reaction = $('p2Reaction');
 const p1Status = $('p1Status'), p2Status = $('p2Status');
 const p1StreakEl = $('p1Streak'), p2StreakEl = $('p2Streak');
+const p1Label = $('p1Label'), p2Label = $('p2Label');
 const centerText = $('centerText'), centerResult = $('centerResult');
 const objContainer = $('objectContainer'), objEmoji = $('objectEmoji');
 const matchPointText = $('matchPointText');
 const p1MatchBorder = $('p1MatchBorder'), p2MatchBorder = $('p2MatchBorder');
 const confettiCanvas = $('confetti'), cctx = confettiCanvas.getContext('2d');
+
+// ============ PLAY MODE SELECTION ============
+document.querySelectorAll('#playModeRow .play-mode-card').forEach(function(c){
+  c.addEventListener('click', function(){
+    document.querySelectorAll('#playModeRow .play-mode-card').forEach(function(x){ x.classList.remove('sel') });
+    c.classList.add('sel');
+    playMode = c.dataset.playmode;
+    $('difficultySection').style.display = playMode === 'bot' ? '' : 'none';
+    $('startBtn').textContent = playMode === 'online' ? 'FIND MATCH' : 'START GAME';
+    SFX.click();
+  });
+});
+
+document.querySelectorAll('#difficultyRow .menu-btn').forEach(function(b){
+  b.addEventListener('click', function(){
+    document.querySelectorAll('#difficultyRow .menu-btn').forEach(function(x){ x.classList.remove('sel') });
+    b.classList.add('sel');
+    botDifficulty = b.dataset.diff;
+    SFX.click();
+  });
+});
 
 // ============ MENU LOGIC ============
 document.querySelectorAll('#modeRow .menu-btn').forEach(function(b){
@@ -406,24 +543,43 @@ document.querySelectorAll('#targetRow .menu-btn').forEach(function(b){
   });
 });
 
-$('startBtn').addEventListener('click', startGame);
+$('startBtn').addEventListener('click', function(){
+  if(playMode === 'online'){
+    showLobby();
+  } else {
+    startGame();
+  }
+});
+
 $('showStats').addEventListener('click', showAllTimeStats);
 $('closeStats').addEventListener('click', function(){ $('stats-overlay').classList.remove('active') });
 $('rematchBtn').addEventListener('click', function(){
-  victoryEl.classList.remove('active'); stopConfetti(); startGame();
+  victoryEl.classList.remove('active'); stopConfetti();
+  if(playMode === 'online' && socket){
+    socket.emit('rematch');
+    return;
+  }
+  startGame();
 });
 $('menuBtn').addEventListener('click', function(){
-  victoryEl.classList.remove('active'); stopConfetti(); showMenu();
+  victoryEl.classList.remove('active'); stopConfetti();
+  if(playMode === 'online' && socket){
+    socket.emit('leaveRoom');
+    socket.disconnect();
+    socket = null;
+  }
+  showMenu();
 });
 $('closeAd').addEventListener('click', function(){
   $('adInterstitial').classList.add('hidden');
 });
 
 function showMenu(){
-  clearAllTimers();
+  clearAllTimers(); clearBotTimers();
   menuEl.classList.remove('hidden');
   gameEl.classList.remove('active');
   victoryEl.classList.remove('active');
+  lobbyEl.classList.remove('active');
 }
 
 function showAllTimeStats(){
@@ -436,12 +592,303 @@ function showAllTimeStats(){
   $('stats-overlay').classList.add('active');
 }
 
+// ============ ONLINE LOBBY ============
+function showLobby(){
+  menuEl.classList.add('hidden');
+  lobbyEl.classList.add('active');
+  $('createSection').classList.remove('active');
+  $('joinSection').classList.remove('active');
+  $('lobbyChoices').style.display = 'flex';
+  $('joinStatus').textContent = '';
+  $('joinStatus').classList.remove('error');
+
+  // Connect socket
+  if(!socket){
+    socket = io();
+    setupSocketListeners();
+  }
+}
+
+$('createRoomBtn').addEventListener('click', function(){
+  $('lobbyChoices').style.display = 'none';
+  $('createSection').classList.add('active');
+  isHost = true;
+  socket.emit('createRoom', { mode: mode, targetScore: targetScore });
+});
+
+$('joinRoomBtn').addEventListener('click', function(){
+  $('lobbyChoices').style.display = 'none';
+  $('joinSection').classList.add('active');
+  $('roomCodeInput').value = '';
+  $('roomCodeInput').focus();
+});
+
+$('joinGoBtn').addEventListener('click', function(){
+  const code = $('roomCodeInput').value.trim().toUpperCase();
+  if(code.length !== 4){
+    $('joinStatus').textContent = 'Enter a 4-letter code';
+    $('joinStatus').classList.add('error');
+    return;
+  }
+  $('joinStatus').textContent = 'Joining...';
+  $('joinStatus').classList.remove('error');
+  isHost = false;
+  socket.emit('joinRoom', { code: code });
+});
+
+$('lobbyBack').addEventListener('click', function(){
+  if(socket){
+    socket.emit('leaveRoom');
+    socket.disconnect();
+    socket = null;
+  }
+  lobbyEl.classList.remove('active');
+  menuEl.classList.remove('hidden');
+});
+
+function setupSocketListeners(){
+  socket.on('roomCreated', function(data){
+    roomCode = data.code;
+    $('roomCodeDisplay').textContent = data.code;
+  });
+
+  socket.on('joinError', function(data){
+    $('joinStatus').textContent = data.message;
+    $('joinStatus').classList.add('error');
+  });
+
+  socket.on('gameStart', function(data){
+    onlinePlayerNum = data.playerNum;
+    mode = data.mode;
+    targetScore = data.targetScore;
+    lobbyEl.classList.remove('active');
+    startGame();
+  });
+
+  socket.on('roundStart', function(data){
+    onlineStartRound(data);
+  });
+
+  socket.on('objectAppear', function(data){
+    onlineShowObject(data);
+  });
+
+  socket.on('fakeout', function(){
+    p1Side.classList.add('fakeout-flash');
+    p2Side.classList.add('fakeout-flash');
+    setTimeout(function(){
+      p1Side.classList.remove('fakeout-flash');
+      p2Side.classList.remove('fakeout-flash');
+    }, 150);
+  });
+
+  socket.on('roundResult', function(data){
+    onlineRoundResult(data);
+  });
+
+  socket.on('falseStartResult', function(data){
+    onlineFalseStartResult(data);
+  });
+
+  socket.on('gameOver', function(data){
+    onlineGameOver(data);
+  });
+
+  socket.on('opponentDisconnected', function(){
+    clearAllTimers();
+    centerText.textContent = 'Opponent left!';
+    centerText.style.color = '#ff4444';
+    disableBtns();
+    setTimeout(function(){
+      gameEl.classList.remove('active');
+      victoryEl.classList.remove('active');
+      showMenu();
+    }, 2000);
+  });
+
+  socket.on('rematchStart', function(data){
+    victoryEl.classList.remove('active');
+    stopConfetti();
+    onlinePlayerNum = data.playerNum;
+    mode = data.mode;
+    targetScore = data.targetScore;
+    startGame();
+  });
+
+  socket.on('disconnect', function(){
+    // If we're in lobby or game, go back to menu
+    if(lobbyEl.classList.contains('active') || gameEl.classList.contains('active')){
+      clearAllTimers();
+      lobbyEl.classList.remove('active');
+      gameEl.classList.remove('active');
+      victoryEl.classList.remove('active');
+      menuEl.classList.remove('hidden');
+    }
+    socket = null;
+  });
+}
+
+// ============ ONLINE GAME FUNCTIONS ============
+function onlineStartRound(data){
+  roundNum = data.roundNum;
+  roundActive = true; objectShown = false; roundSettled = false;
+  p1Pressed = false; p2Pressed = false;
+  p1ReactionTime = 0; p2ReactionTime = 0;
+  clearFlashes(); clearReactions(); clearStatuses();
+  hideObject();
+  centerResult.textContent = '';
+  checkMatchPoint();
+
+  // Only enable my button
+  if(onlinePlayerNum === 1){
+    p1Btn.classList.remove('disabled');
+    p2Btn.classList.add('disabled');
+  } else {
+    p2Btn.classList.remove('disabled');
+    p1Btn.classList.add('disabled');
+  }
+
+  centerText.textContent = 'Get Ready...';
+  centerText.style.color = '#666';
+  SFX.tick();
+}
+
+function onlineShowObject(data){
+  objectShown = true;
+  objectTime = performance.now();
+  const obj = OBJECTS[data.objectIndex];
+  objEmoji.textContent = obj.emoji;
+  objEmoji.className = obj.cls;
+  objContainer.className = 'object-container appear';
+  centerText.textContent = 'GRAB!';
+  centerText.style.color = '#ffe600';
+  SFX.appear();
+  spawnParticles(window.innerWidth / 2, window.innerHeight / 2, 10, '#ffe600');
+}
+
+function onlineRoundResult(data){
+  roundSettled = true; roundActive = false;
+  SFX.grab();
+  objContainer.classList.remove('appear');
+  objContainer.classList.add('grabbed');
+
+  p1Score = data.p1Score;
+  p2Score = data.p2Score;
+  p1Streak = data.p1Streak;
+  p2Streak = data.p2Streak;
+  p1MaxStreak = Math.max(p1MaxStreak, p1Streak);
+  p2MaxStreak = Math.max(p2MaxStreak, p2Streak);
+
+  if(data.winner === 1){
+    flashSide(1, 'green'); flashSide(2, 'red');
+  } else {
+    flashSide(2, 'green'); flashSide(1, 'red');
+  }
+
+  if(data.p1Time > 0){ showReaction(1, data.p1Time); p1Times.push(data.p1Time); }
+  if(data.p2Time > 0){ showReaction(2, data.p2Time); p2Times.push(data.p2Time); }
+
+  updateScores(); updateStreaks();
+  SFX.point(); vib(30);
+
+  if(data.timeDiff > 0){
+    centerResult.textContent = 'Won by ' + data.timeDiff + 'ms!';
+    centerResult.style.color = data.timeDiff < 20 ? '#ff4444' : '#ffaa00';
+  }
+
+  centerText.textContent = 'Player ' + data.winner + ' grabs it!';
+  centerText.style.color = data.winner === 1 ? '#4488ff' : '#ff4444';
+  disableBtns();
+
+  const rect = (data.winner === 1 ? p1Side : p2Side).getBoundingClientRect();
+  spawnParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, 12,
+    data.winner === 1 ? '#4488ff' : '#ff4444');
+
+  if(data.p1Time > 0 || data.p2Time > 0){
+    const winTime = data.winner === 1 ? data.p1Time : data.p2Time;
+    if(winTime > 0){
+      const s = getStats();
+      if(winTime < (s.fastestEver || Infinity)) updateStats({ fastestEver: winTime });
+    }
+  }
+}
+
+function onlineFalseStartResult(data){
+  roundSettled = true; roundActive = false;
+  hideObject();
+  SFX.falseStart(); vib([80, 40, 80]);
+
+  p1Score = data.p1Score;
+  p2Score = data.p2Score;
+  p1Streak = data.p1Streak;
+  p2Streak = data.p2Streak;
+  if(data.offender === 1){
+    p1FalseStarts++;
+    flashSide(1, 'orange'); flashSide(2, 'green');
+    p1Status.textContent = 'TOO EARLY!';
+    p2Status.textContent = '+1 FREE';
+  } else {
+    p2FalseStarts++;
+    flashSide(2, 'orange'); flashSide(1, 'green');
+    p2Status.textContent = 'TOO EARLY!';
+    p1Status.textContent = '+1 FREE';
+  }
+
+  updateScores(); updateStreaks();
+  centerText.textContent = 'FALSE START!';
+  centerText.style.color = '#ff8800';
+  disableBtns();
+  SFX.point();
+}
+
+function onlineGameOver(data){
+  roundSettled = true; disableBtns(); clearAllTimers();
+  matchesPlayed++;
+  p1Score = data.p1Score;
+  p2Score = data.p2Score;
+
+  const winner = data.winner;
+  const s = getStats();
+  updateStats({
+    gamesPlayed: (s.gamesPlayed || 0) + 1,
+    p1Wins: (s.p1Wins || 0) + (winner === 1 ? 1 : 0),
+    p2Wins: (s.p2Wins || 0) + (winner === 2 ? 1 : 0)
+  });
+
+  SFX.victory(); vib([50, 30, 50, 30, 100]);
+  showVictory(winner);
+}
+
 // ============ GAME START ============
 function startGame(){
   ensureAudio();
   menuEl.classList.add('hidden');
   victoryEl.classList.remove('active');
   gameEl.classList.add('active');
+
+  // Configure labels and rotation based on play mode
+  if(playMode === 'bot'){
+    p1Side.classList.remove('rotated');
+    p1Label.textContent = 'YOU';
+    p2Label.textContent = 'BOT';
+    p2Btn.classList.add('bot-btn');
+  } else if(playMode === 'online'){
+    p1Side.classList.remove('rotated');
+    if(onlinePlayerNum === 1){
+      p1Label.textContent = 'YOU';
+      p2Label.textContent = 'OPPONENT';
+    } else {
+      p1Label.textContent = 'OPPONENT';
+      p2Label.textContent = 'YOU';
+    }
+    p2Btn.classList.remove('bot-btn');
+  } else {
+    // Local: P1 rotated for face-to-face
+    p1Side.classList.add('rotated');
+    p1Label.textContent = 'Player 1';
+    p2Label.textContent = 'Player 2';
+    p2Btn.classList.remove('bot-btn');
+  }
 
   if(mode === 'sudden'){ targetScore = 1; totalRounds = 1 }
   else if(mode === 'marathon'){ targetScore = 9999; totalRounds = 30 }
@@ -455,6 +902,9 @@ function startGame(){
   p1MatchBorder.classList.remove('active');
   p2MatchBorder.classList.remove('active');
 
+  // Online: server controls rounds
+  if(playMode === 'online') return;
+
   setTimeout(startRound, 600);
 }
 
@@ -464,24 +914,25 @@ function startRound(){
   roundActive = true; objectShown = false; roundSettled = false;
   p1Pressed = false; p2Pressed = false;
   p1ReactionTime = 0; p2ReactionTime = 0;
-  clearTimers();
+  clearTimers(); clearBotTimers();
   clearFlashes(); clearReactions(); clearStatuses();
   hideObject();
   centerResult.textContent = '';
 
-  // Check match point
   checkMatchPoint();
 
-  // Enable buttons (for false start detection)
-  enableBtns();
+  // Enable appropriate buttons
+  if(playMode === 'bot'){
+    p1Btn.classList.remove('disabled');
+    p2Btn.classList.add('disabled');
+  } else {
+    enableBtns();
+  }
 
   centerText.textContent = 'Get Ready...';
   centerText.style.color = '#666';
-
-  // Tick sounds
   SFX.tick();
 
-  // Random delay with optional fakeouts
   const delay = 1500 + Math.random() * 3500;
   const numFakeouts = Math.random() < 0.35 ? 1 : (Math.random() < 0.15 ? 2 : 0);
 
@@ -494,6 +945,19 @@ function startRound(){
           p1Side.classList.remove('fakeout-flash');
           p2Side.classList.remove('fakeout-flash');
         }, 150);
+
+        // Bot might false start on fakeout
+        if(playMode === 'bot' && !roundSettled){
+          const diff = BOT_DIFFICULTY[botDifficulty];
+          if(Math.random() < diff.falseStartChance){
+            botFalseStartTimer = setTimeout(function(){
+              if(!roundSettled && !objectShown){
+                p2Pressed = true;
+                handleFalseStart(2);
+              }
+            }, 80 + Math.random() * 150);
+          }
+        }
       }
     }, 600 + Math.random() * (delay - 800));
     fakeoutTimers.push(ft);
@@ -516,6 +980,11 @@ function showObjectNow(){
   centerText.style.color = '#ffe600';
   SFX.appear();
   spawnParticles(window.innerWidth / 2, window.innerHeight / 2, 10, '#ffe600');
+
+  // Schedule bot grab
+  if(playMode === 'bot'){
+    scheduleBotGrab();
+  }
 }
 
 function hideObject(){
@@ -524,10 +993,65 @@ function hideObject(){
   objEmoji.className = '';
 }
 
+// ============ BOT AI ============
+function scheduleBotGrab(){
+  const diff = BOT_DIFFICULTY[botDifficulty];
+
+  // Chance bot misses entirely (doesn't press)
+  if(Math.random() < diff.missChance) return;
+
+  const reactionTime = diff.minRT + Math.random() * (diff.maxRT - diff.minRT);
+  botTimer = setTimeout(function(){
+    if(roundSettled || !objectShown) return;
+    const rt = Math.round(performance.now() - objectTime);
+    p2Pressed = true;
+    p2ReactionTime = rt;
+    p2Times.push(rt);
+    showReaction(2, rt);
+
+    if(!p1Pressed){
+      settleRound(2, rt);
+    } else {
+      if(rt <= p1ReactionTime){
+        settleRound(2, rt);
+      } else {
+        settleRound(1, p1ReactionTime);
+      }
+    }
+  }, reactionTime);
+}
+
+function clearBotTimers(){
+  clearTimeout(botTimer);
+  clearTimeout(botFalseStartTimer);
+  botTimer = null;
+  botFalseStartTimer = null;
+}
+
 // ============ BUTTON HANDLERS ============
 function onP1Grab(e){
   e.preventDefault(); e.stopPropagation();
   if(roundSettled || p1Pressed || !roundActive) return;
+
+  // Online mode: send grab to server
+  if(playMode === 'online'){
+    SFX.click(); vib(15);
+    if(!objectShown){
+      socket.emit('grab', { playerNum: onlinePlayerNum, falseStart: true });
+      p1Pressed = true;
+      return;
+    }
+    const rt = Math.round(performance.now() - objectTime);
+    if(rt < 100){
+      socket.emit('grab', { playerNum: onlinePlayerNum, falseStart: true });
+      p1Pressed = true;
+      return;
+    }
+    socket.emit('grab', { playerNum: onlinePlayerNum, reactionTime: rt });
+    p1Pressed = true;
+    return;
+  }
+
   SFX.click(); vib(15);
   p1Pressed = true;
 
@@ -543,10 +1067,13 @@ function onP1Grab(e){
   showReaction(1, rt);
 
   if(!p2Pressed){
-    // P1 wins this round
+    if(playMode === 'bot'){
+      // Wait for bot to press or timeout
+      // Bot might still press - we already won, settle it
+      clearBotTimers();
+    }
     settleRound(1, rt);
   } else {
-    // Both pressed - compare times
     if(rt <= p2ReactionTime){
       settleRound(1, rt);
     } else {
@@ -558,6 +1085,29 @@ function onP1Grab(e){
 function onP2Grab(e){
   e.preventDefault(); e.stopPropagation();
   if(roundSettled || p2Pressed || !roundActive) return;
+
+  // In bot mode, P2 button is disabled for human
+  if(playMode === 'bot') return;
+
+  // Online mode: send grab to server
+  if(playMode === 'online'){
+    SFX.click(); vib(15);
+    if(!objectShown){
+      socket.emit('grab', { playerNum: onlinePlayerNum, falseStart: true });
+      p2Pressed = true;
+      return;
+    }
+    const rt = Math.round(performance.now() - objectTime);
+    if(rt < 100){
+      socket.emit('grab', { playerNum: onlinePlayerNum, falseStart: true });
+      p2Pressed = true;
+      return;
+    }
+    socket.emit('grab', { playerNum: onlinePlayerNum, reactionTime: rt });
+    p2Pressed = true;
+    return;
+  }
+
   SFX.click(); vib(15);
   p2Pressed = true;
 
@@ -592,7 +1142,7 @@ p2Btn.addEventListener('mousedown', onP2Grab);
 // ============ FALSE START ============
 function handleFalseStart(player){
   roundSettled = true; roundActive = false;
-  clearTimers(); hideObject();
+  clearTimers(); clearBotTimers(); hideObject();
   SFX.falseStart(); vib([80, 40, 80]);
 
   if(player === 1){
@@ -624,7 +1174,6 @@ function handleFalseStart(player){
 
   if(checkWin()) return;
 
-  // Extra random delay after false start
   nextRoundTimeout = setTimeout(startRound, 2200 + Math.random() * 1200);
 }
 
@@ -632,7 +1181,7 @@ function handleFalseStart(player){
 function settleRound(winner, winnerTime){
   if(roundSettled) return;
   roundSettled = true; roundActive = false;
-  clearTimers();
+  clearTimers(); clearBotTimers();
   SFX.grab();
   objContainer.classList.remove('appear');
   objContainer.classList.add('grabbed');
@@ -650,7 +1199,6 @@ function settleRound(winner, winnerTime){
   updateScores(); updateStreaks();
   SFX.point(); vib(30);
 
-  // Show time difference if both pressed
   const loserTime = winner === 1 ? p2ReactionTime : p1ReactionTime;
   if(loserTime > 0){
     const diff = Math.abs(loserTime - winnerTime);
@@ -660,16 +1208,17 @@ function settleRound(winner, winnerTime){
     centerResult.textContent = '';
   }
 
-  centerText.textContent = 'Player ' + winner + ' grabs it!';
+  const winnerLabel = playMode === 'bot'
+    ? (winner === 1 ? 'You grab' : 'Bot grabs')
+    : 'Player ' + winner + ' grabs';
+  centerText.textContent = winnerLabel + ' it!';
   centerText.style.color = winner === 1 ? '#4488ff' : '#ff4444';
   disableBtns();
 
-  // Spawn celebration particles on winner side
   const rect = (winner === 1 ? p1Side : p2Side).getBoundingClientRect();
   spawnParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, 12,
     winner === 1 ? '#4488ff' : '#ff4444');
 
-  // Update fastest ever
   const s = getStats();
   if(winnerTime < (s.fastestEver || Infinity)){
     updateStats({ fastestEver: winnerTime });
@@ -677,7 +1226,6 @@ function settleRound(winner, winnerTime){
 
   if(checkWin()) return;
 
-  // Marathon round limit
   if(mode === 'marathon' && roundNum >= totalRounds){
     setTimeout(function(){ endGame() }, 1000);
     return;
@@ -706,10 +1254,9 @@ function checkMatchPoint(){
 
 // ============ END GAME ============
 function endGame(winner){
-  roundSettled = true; disableBtns(); clearAllTimers();
+  roundSettled = true; disableBtns(); clearAllTimers(); clearBotTimers();
   matchesPlayed++;
 
-  // Marathon: determine winner by score
   if(winner === undefined){
     winner = p1Score > p2Score ? 1 : (p2Score > p1Score ? 2 : 0);
   }
@@ -724,7 +1271,6 @@ function endGame(winner){
   SFX.victory(); vib([50, 30, 50, 30, 100]);
   showVictory(winner);
 
-  // Interstitial ad every 3 matches
   if(matchesPlayed > 0 && matchesPlayed % 3 === 0){
     setTimeout(function(){
       $('adInterstitial').classList.remove('hidden');
@@ -742,13 +1288,23 @@ function showVictory(winner){
     vtitle.style.color = '#ffcc00';
     vsub.textContent = p1Score + ' - ' + p2Score;
   } else {
-    vtitle.textContent = 'PLAYER ' + winner + ' WINS!';
+    if(playMode === 'bot'){
+      vtitle.textContent = winner === 1 ? 'YOU WIN!' : 'BOT WINS!';
+    } else if(playMode === 'online'){
+      const youWin = (winner === onlinePlayerNum);
+      vtitle.textContent = youWin ? 'YOU WIN!' : 'YOU LOSE!';
+    } else {
+      vtitle.textContent = 'PLAYER ' + winner + ' WINS!';
+    }
     vtitle.style.color = winner === 1 ? '#4488ff' : '#ff4444';
     vsub.textContent = p1Score + ' - ' + p2Score;
   }
 
   function avg(arr){ return arr.length ? Math.round(arr.reduce(function(a,b){ return a+b },0) / arr.length) : '-' }
   function fastest(arr){ return arr.length ? Math.min.apply(null, arr) : '-' }
+
+  const lab1 = playMode === 'bot' ? 'YOU' : (playMode === 'online' ? (onlinePlayerNum === 1 ? 'YOU' : 'OPP') : 'P1');
+  const lab2 = playMode === 'bot' ? 'BOT' : (playMode === 'online' ? (onlinePlayerNum === 2 ? 'YOU' : 'OPP') : 'P2');
 
   $('victoryStats').innerHTML =
     '<div class="p1-stat">' + avg(p1Times) + (p1Times.length ? 'ms' : '') + '</div>' +
@@ -782,7 +1338,6 @@ function updateScores(){
   p1ScoreEl.textContent = p1Score;
   p2ScoreEl.textContent = p2Score;
 
-  // Add tension glow when scores are close and high
   const maxS = Math.max(p1Score, p2Score);
   const need = mode === 'marathon' ? 9999 : targetScore;
   if(maxS >= need - 2 && Math.abs(p1Score - p2Score) <= 2 && maxS > 2){
@@ -918,6 +1473,10 @@ window.addEventListener('resize', function(){
     confettiCanvas.height = window.innerHeight;
   }
 });
+
+// ============ INIT ============
+// Set initial visibility
+$('difficultySection').style.display = playMode === 'bot' ? '' : 'none';
 
 })();
 </script>
