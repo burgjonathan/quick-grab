@@ -457,8 +457,12 @@ const ECO_KEY='quickgrab_economy';
 function loadEco(){try{return JSON.parse(localStorage.getItem(ECO_KEY))||{}}catch(e){return{}}}
 function saveEco(e){try{localStorage.setItem(ECO_KEY,JSON.stringify(e))}catch(ex){}}
 function getEco(){
-  return{coins:0,xp:0,level:1,hasPremium:false,owned:['btn_default','theme_default','trail_default','victory_default'],
-    equipped:{button:'btn_default',theme:'theme_default',trail:'trail_default',victory:'victory_default'},claimed:[],...loadEco()}
+  const defaults={coins:0,xp:0,level:1,hasPremium:false,owned:['btn_default','theme_default','trail_default','victory_default'],
+    equipped:{button:'btn_default',theme:'theme_default',trail:'trail_default',victory:'victory_default'},claimed:[],welcomeGiven:false};
+  const e={...defaults,...loadEco()};
+  // First-time welcome bonus
+  if(!e.welcomeGiven){e.coins+=10000;e.welcomeGiven=true;saveEco(e)}
+  return e;
 }
 function setEco(obj){const e=getEco();Object.assign(e,obj);saveEco(e);refreshEcoUI()}
 function addCoins(n){const e=getEco();e.coins+=n;saveEco(e);refreshEcoUI();return e.coins}
