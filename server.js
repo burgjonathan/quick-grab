@@ -16,6 +16,7 @@ app.get('/', (req, res) => {
 
 // ============ ONLINE MULTIPLAYER ============
 const rooms = new Map();
+let waitingRoom = null; // room code waiting for a second player
 
 function generateCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -33,25 +34,60 @@ function cleanupRoom(code) {
     clearTimeout(room.roundTimer);
     room.fakeoutTimers.forEach(clearTimeout);
     clearTimeout(room.nextRoundTimer);
+    clearTimeout(room.grabTimeout);
     rooms.delete(code);
+    if (waitingRoom === code) waitingRoom = null;
   }
 }
 
 io.on('connection', (socket) => {
   let currentRoom = null;
 
-  socket.on('createRoom', (data) => {
+  socket.on('findMatch', (data) => {
+    const ts = data.targetScore || 10;
+
+    // Try to join a waiting room
+    if (waitingRoom && rooms.has(waitingRoom)) {
+      const room = rooms.get(waitingRoom);
+      if (!room.guest) {
+        // Join existing room
+        room.guest = socket.id;
+        room.targetScore = ts;
+        socket.join(waitingRoom);
+        currentRoom = waitingRoom;
+        waitingRoom = null;
+
+        // Tell both players: 2/2
+        io.to(currentRoom).emit('matchUpdate', { players: 2 });
+
+        // Start game
+        io.to(room.host).emit('gameStart', {
+          playerNum: 1,
+          mode: 'classic',
+          targetScore: room.targetScore
+        });
+        io.to(room.guest).emit('gameStart', {
+          playerNum: 2,
+          mode: 'classic',
+          targetScore: room.targetScore
+        });
+
+        room.nextRoundTimer = setTimeout(() => startOnlineRound(currentRoom), 800);
+        return;
+      }
+    }
+
+    // No waiting room available — create one
     const code = generateCode();
     const room = {
       code,
-      mode: data.mode || 'classic',
-      targetScore: data.targetScore || 10,
+      mode: 'classic',
+      targetScore: ts,
       host: socket.id,
       guest: null,
       p1Score: 0,
       p2Score: 0,
       roundNum: 0,
-      totalRounds: 30,
       p1Streak: 0,
       p2Streak: 0,
       p1Time: 0,
@@ -61,50 +97,16 @@ io.on('connection', (socket) => {
       roundTimer: null,
       fakeoutTimers: [],
       nextRoundTimer: null,
+      grabTimeout: null,
       objectIndex: 0
     };
-
-    if (room.mode === 'sudden') { room.targetScore = 1; room.totalRounds = 1; }
-    else if (room.mode === 'marathon') { room.targetScore = 9999; room.totalRounds = 30; }
-    else { room.totalRounds = 9999; }
 
     rooms.set(code, room);
     socket.join(code);
     currentRoom = code;
-    socket.emit('roomCreated', { code });
-  });
+    waitingRoom = code;
 
-  socket.on('joinRoom', (data) => {
-    const code = data.code.toUpperCase();
-    const room = rooms.get(code);
-
-    if (!room) {
-      socket.emit('joinError', { message: 'Room not found' });
-      return;
-    }
-    if (room.guest) {
-      socket.emit('joinError', { message: 'Room is full' });
-      return;
-    }
-
-    room.guest = socket.id;
-    socket.join(code);
-    currentRoom = code;
-
-    // Notify both players the game is starting
-    io.to(room.host).emit('gameStart', {
-      playerNum: 1,
-      mode: room.mode,
-      targetScore: room.mode === 'classic' ? room.targetScore : (room.mode === 'sudden' ? 1 : 9999)
-    });
-    io.to(room.guest).emit('gameStart', {
-      playerNum: 2,
-      mode: room.mode,
-      targetScore: room.mode === 'classic' ? room.targetScore : (room.mode === 'sudden' ? 1 : 9999)
-    });
-
-    // Start first round after a short delay
-    room.nextRoundTimer = setTimeout(() => startOnlineRound(code), 800);
+    socket.emit('matchUpdate', { players: 1 });
   });
 
   socket.on('grab', (data) => {
@@ -115,7 +117,6 @@ io.on('connection', (socket) => {
     const playerNum = data.playerNum;
 
     if (data.falseStart) {
-      // Handle false start
       room.roundSettled = true;
       clearTimeout(room.roundTimer);
       room.fakeoutTimers.forEach(clearTimeout);
@@ -141,17 +142,13 @@ io.on('connection', (socket) => {
         p2Streak: room.p2Streak
       });
 
-      // Check win
-      if (room.mode !== 'marathon') {
-        const ts = room.mode === 'classic' ? room.targetScore : 1;
-        if (room.p1Score >= ts) {
-          setTimeout(() => endOnlineGame(currentRoom, 1), 800);
-          return;
-        }
-        if (room.p2Score >= ts) {
-          setTimeout(() => endOnlineGame(currentRoom, 2), 800);
-          return;
-        }
+      if (room.p1Score >= room.targetScore) {
+        setTimeout(() => endOnlineGame(currentRoom, 1), 800);
+        return;
+      }
+      if (room.p2Score >= room.targetScore) {
+        setTimeout(() => endOnlineGame(currentRoom, 2), 800);
+        return;
       }
 
       room.nextRoundTimer = setTimeout(() => startOnlineRound(currentRoom), 2500);
@@ -162,7 +159,7 @@ io.on('connection', (socket) => {
     if (!room.objectShown) return;
 
     const rt = data.reactionTime;
-    if (rt < 100) return; // Too fast, ignore
+    if (rt < 100) return;
 
     if (playerNum === 1) {
       room.p1Time = rt;
@@ -170,11 +167,9 @@ io.on('connection', (socket) => {
       room.p2Time = rt;
     }
 
-    // Check if both players have grabbed or settle after timeout
     if (room.p1Time > 0 && room.p2Time > 0) {
       settleOnlineRound(currentRoom);
     } else {
-      // Give opponent 2 seconds to respond
       if (!room.grabTimeout) {
         room.grabTimeout = setTimeout(() => {
           if (!room.roundSettled) settleOnlineRound(currentRoom);
@@ -188,7 +183,6 @@ io.on('connection', (socket) => {
     const room = rooms.get(currentRoom);
     if (!room || !room.host || !room.guest) return;
 
-    // Reset room state
     room.p1Score = 0;
     room.p2Score = 0;
     room.roundNum = 0;
@@ -197,13 +191,13 @@ io.on('connection', (socket) => {
 
     io.to(room.host).emit('rematchStart', {
       playerNum: 1,
-      mode: room.mode,
-      targetScore: room.mode === 'classic' ? room.targetScore : (room.mode === 'sudden' ? 1 : 9999)
+      mode: 'classic',
+      targetScore: room.targetScore
     });
     io.to(room.guest).emit('rematchStart', {
       playerNum: 2,
-      mode: room.mode,
-      targetScore: room.mode === 'classic' ? room.targetScore : (room.mode === 'sudden' ? 1 : 9999)
+      mode: 'classic',
+      targetScore: room.targetScore
     });
 
     room.nextRoundTimer = setTimeout(() => startOnlineRound(currentRoom), 800);
@@ -265,11 +259,9 @@ function startOnlineRound(code) {
     room.objectIndex = Math.floor(Math.random() * 6);
     io.to(code).emit('objectAppear', { objectIndex: room.objectIndex });
 
-    // Auto-settle after 5 seconds if neither player grabs
     room.grabTimeout = setTimeout(() => {
       if (!room.roundSettled) {
         room.roundSettled = true;
-        // Nobody grabbed, just start next round
         room.nextRoundTimer = setTimeout(() => startOnlineRound(code), 1000);
       }
     }, 5000);
@@ -291,7 +283,6 @@ function settleOnlineRound(code) {
   } else if (room.p2Time > 0) {
     winner = 2;
   } else {
-    // Neither grabbed (shouldn't happen normally)
     room.nextRoundTimer = setTimeout(() => startOnlineRound(code), 1500);
     return;
   }
@@ -319,25 +310,12 @@ function settleOnlineRound(code) {
     timeDiff
   });
 
-  // Check win
-  if (room.mode !== 'marathon') {
-    const ts = room.targetScore;
-    if (room.p1Score >= ts) {
-      setTimeout(() => endOnlineGame(code, 1), 800);
-      return;
-    }
-    if (room.p2Score >= ts) {
-      setTimeout(() => endOnlineGame(code, 2), 800);
-      return;
-    }
+  if (room.p1Score >= room.targetScore) {
+    setTimeout(() => endOnlineGame(code, 1), 800);
+    return;
   }
-
-  // Marathon round limit
-  if (room.mode === 'marathon' && room.roundNum >= room.totalRounds) {
-    setTimeout(() => {
-      const w = room.p1Score > room.p2Score ? 1 : (room.p2Score > room.p1Score ? 2 : 0);
-      endOnlineGame(code, w);
-    }, 1000);
+  if (room.p2Score >= room.targetScore) {
+    setTimeout(() => endOnlineGame(code, 2), 800);
     return;
   }
 

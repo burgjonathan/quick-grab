@@ -39,23 +39,10 @@ body{display:flex;flex-direction:column;position:fixed;top:0;left:0;right:0;bott
 /* ===== ONLINE LOBBY ===== */
 #lobby{position:absolute;inset:0;z-index:150;display:none;flex-direction:column;align-items:center;justify-content:center;background:#0a0a12}
 #lobby.active{display:flex}
-.lobby-title{font-size:clamp(1.2rem,4vw,2rem);font-weight:900;color:#00f0ff;margin-bottom:.5em}
-.lobby-subtitle{font-size:clamp(.7rem,2vw,.9rem);color:#666;margin-bottom:1.5em}
-.lobby-btn-row{display:flex;gap:1em;margin-bottom:1.5em}
-.lobby-btn{padding:.8em 1.8em;border:2px solid;border-radius:12px;font-size:clamp(.85rem,2.2vw,1.1rem);font-weight:700;cursor:pointer;transition:all .15s}
-.lobby-btn:active{transform:scale(.93)}
-.lobby-btn.create{border-color:#00ff88;color:#00ff88;background:rgba(0,255,136,.1)}
-.lobby-btn.join{border-color:#ff8800;color:#ff8800;background:rgba(255,136,0,.1)}
+.lobby-title{font-size:clamp(1.4rem,5vw,2.2rem);font-weight:900;color:#00f0ff;margin-bottom:.6em;letter-spacing:.1em}
+.lobby-players{font-size:clamp(2.5rem,10vw,5rem);font-weight:900;color:#fff;margin-bottom:.3em;font-variant-numeric:tabular-nums}
+.lobby-status{font-size:clamp(.75rem,2.2vw,.95rem);color:#888;margin-bottom:1.5em;min-height:1.5em}
 .lobby-back{padding:.5em 1.5em;border:1px solid #333;border-radius:8px;background:transparent;color:#666;font-size:.8rem;cursor:pointer;margin-top:1em}
-.lobby-section{text-align:center;margin-bottom:1em;display:none}
-.lobby-section.active{display:block}
-.room-code-display{font-size:clamp(2rem,8vw,4rem);font-weight:900;letter-spacing:.3em;color:#00ff88;font-family:monospace;margin:.3em 0}
-.room-code-input{width:180px;padding:.7em;text-align:center;font-size:1.2rem;font-weight:900;letter-spacing:.3em;background:rgba(255,255,255,.08);border:2px solid #444;border-radius:10px;color:#fff;font-family:monospace;outline:none}
-.room-code-input:focus{border-color:#ff8800}
-.room-code-input::placeholder{color:#333;letter-spacing:.1em}
-.lobby-go{padding:.6em 2em;border:2px solid #ff8800;border-radius:10px;background:rgba(255,136,0,.15);color:#ff8800;font-size:1rem;font-weight:700;cursor:pointer;margin-top:.8em}
-.lobby-status{font-size:clamp(.7rem,2vw,.9rem);color:#888;margin-top:.8em;min-height:1.5em}
-.lobby-status.error{color:#ff4444}
 .waiting-dots::after{content:'';animation:dots 1.5s steps(4,end) infinite}
 @keyframes dots{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}}
 
@@ -236,25 +223,6 @@ body{display:flex;flex-direction:column;position:fixed;top:0;left:0;right:0;bott
     </div>
   </div>
 
-  <div class="menu-section">
-    <h3>Game Mode</h3>
-    <div class="menu-btn-row" id="modeRow">
-      <div class="menu-btn sel" data-mode="classic">Classic</div>
-      <div class="menu-btn" data-mode="sudden">Sudden Death</div>
-      <div class="menu-btn" data-mode="marathon">Marathon</div>
-    </div>
-  </div>
-
-  <div class="menu-section" id="targetSection">
-    <h3>Points to Win</h3>
-    <div class="menu-btn-row" id="targetRow">
-      <div class="menu-btn" data-target="5">5</div>
-      <div class="menu-btn sel" data-target="10">10</div>
-      <div class="menu-btn" data-target="15">15</div>
-      <div class="menu-btn" data-target="20">20</div>
-    </div>
-  </div>
-
   <div class="menu-btn big" id="startBtn">START GAME</div>
   <div class="stats-btn" id="showStats">All-Time Stats</div>
   <div class="remove-ads">Remove Ads $1.99</div>
@@ -262,29 +230,10 @@ body{display:flex;flex-direction:column;position:fixed;top:0;left:0;right:0;bott
 
 <!-- ONLINE LOBBY -->
 <div id="lobby">
-  <div class="lobby-title">ONLINE MODE</div>
-  <div class="lobby-subtitle">Play with a friend anywhere</div>
-
-  <div class="lobby-btn-row" id="lobbyChoices">
-    <div class="lobby-btn create" id="createRoomBtn">CREATE ROOM</div>
-    <div class="lobby-btn join" id="joinRoomBtn">JOIN ROOM</div>
-  </div>
-
-  <div class="lobby-section" id="createSection">
-    <div style="color:#666;font-size:.8rem;margin-bottom:.3em">Share this code with your friend:</div>
-    <div class="room-code-display" id="roomCodeDisplay">----</div>
-    <div class="lobby-status">Waiting for opponent<span class="waiting-dots"></span></div>
-  </div>
-
-  <div class="lobby-section" id="joinSection">
-    <div style="color:#666;font-size:.8rem;margin-bottom:.5em">Enter room code:</div>
-    <input class="room-code-input" id="roomCodeInput" type="text" maxlength="4" placeholder="CODE" autocomplete="off" autocorrect="off" autocapitalize="characters">
-    <br>
-    <div class="lobby-go" id="joinGoBtn">JOIN</div>
-    <div class="lobby-status" id="joinStatus"></div>
-  </div>
-
-  <div class="lobby-back" id="lobbyBack">Back to Menu</div>
+  <div class="lobby-title">FINDING MATCH</div>
+  <div class="lobby-players" id="lobbyPlayers">1/2 Players</div>
+  <div class="lobby-status" id="lobbyStatus">Searching for opponent<span class="waiting-dots"></span></div>
+  <div class="lobby-back" id="lobbyBack">Cancel</div>
 </div>
 
 <!-- STATS OVERLAY -->
@@ -466,7 +415,7 @@ const BOT_DIFFICULTY = {
 // ============ GAME STATE ============
 let playMode = 'bot'; // 'bot', 'online', 'local'
 let botDifficulty = 'medium';
-let mode = 'classic', targetScore = 10, totalRounds = 30;
+let mode = 'classic', targetScore = 10;
 let p1Score = 0, p2Score = 0, roundNum = 0;
 let p1Times = [], p2Times = [], p1FalseStarts = 0, p2FalseStarts = 0;
 let p1Streak = 0, p2Streak = 0, p1MaxStreak = 0, p2MaxStreak = 0;
@@ -519,26 +468,6 @@ document.querySelectorAll('#difficultyRow .menu-btn').forEach(function(b){
     document.querySelectorAll('#difficultyRow .menu-btn').forEach(function(x){ x.classList.remove('sel') });
     b.classList.add('sel');
     botDifficulty = b.dataset.diff;
-    SFX.click();
-  });
-});
-
-// ============ MENU LOGIC ============
-document.querySelectorAll('#modeRow .menu-btn').forEach(function(b){
-  b.addEventListener('click', function(){
-    document.querySelectorAll('#modeRow .menu-btn').forEach(function(x){ x.classList.remove('sel') });
-    b.classList.add('sel');
-    mode = b.dataset.mode;
-    $('targetSection').style.display = mode === 'classic' ? '' : 'none';
-    SFX.click();
-  });
-});
-
-document.querySelectorAll('#targetRow .menu-btn').forEach(function(b){
-  b.addEventListener('click', function(){
-    document.querySelectorAll('#targetRow .menu-btn').forEach(function(x){ x.classList.remove('sel') });
-    b.classList.add('sel');
-    targetScore = parseInt(b.dataset.target);
     SFX.click();
   });
 });
@@ -596,45 +525,18 @@ function showAllTimeStats(){
 function showLobby(){
   menuEl.classList.add('hidden');
   lobbyEl.classList.add('active');
-  $('createSection').classList.remove('active');
-  $('joinSection').classList.remove('active');
-  $('lobbyChoices').style.display = 'flex';
-  $('joinStatus').textContent = '';
-  $('joinStatus').classList.remove('error');
+  $('lobbyPlayers').textContent = '1/2 Players';
+  $('lobbyStatus').innerHTML = 'Searching for opponent<span class="waiting-dots"></span>';
 
-  // Connect socket
-  if(!socket){
-    socket = io();
-    setupSocketListeners();
+  // Connect and auto-matchmake
+  if(socket){
+    socket.disconnect();
+    socket = null;
   }
+  socket = io();
+  setupSocketListeners();
+  socket.emit('findMatch', { targetScore: targetScore });
 }
-
-$('createRoomBtn').addEventListener('click', function(){
-  $('lobbyChoices').style.display = 'none';
-  $('createSection').classList.add('active');
-  isHost = true;
-  socket.emit('createRoom', { mode: mode, targetScore: targetScore });
-});
-
-$('joinRoomBtn').addEventListener('click', function(){
-  $('lobbyChoices').style.display = 'none';
-  $('joinSection').classList.add('active');
-  $('roomCodeInput').value = '';
-  $('roomCodeInput').focus();
-});
-
-$('joinGoBtn').addEventListener('click', function(){
-  const code = $('roomCodeInput').value.trim().toUpperCase();
-  if(code.length !== 4){
-    $('joinStatus').textContent = 'Enter a 4-letter code';
-    $('joinStatus').classList.add('error');
-    return;
-  }
-  $('joinStatus').textContent = 'Joining...';
-  $('joinStatus').classList.remove('error');
-  isHost = false;
-  socket.emit('joinRoom', { code: code });
-});
 
 $('lobbyBack').addEventListener('click', function(){
   if(socket){
@@ -647,14 +549,8 @@ $('lobbyBack').addEventListener('click', function(){
 });
 
 function setupSocketListeners(){
-  socket.on('roomCreated', function(data){
-    roomCode = data.code;
-    $('roomCodeDisplay').textContent = data.code;
-  });
-
-  socket.on('joinError', function(data){
-    $('joinStatus').textContent = data.message;
-    $('joinStatus').classList.add('error');
+  socket.on('matchUpdate', function(data){
+    $('lobbyPlayers').textContent = data.players + '/2 Players';
   });
 
   socket.on('gameStart', function(data){
@@ -889,10 +785,6 @@ function startGame(){
     p2Label.textContent = 'Player 2';
     p2Btn.classList.remove('bot-btn');
   }
-
-  if(mode === 'sudden'){ targetScore = 1; totalRounds = 1 }
-  else if(mode === 'marathon'){ targetScore = 9999; totalRounds = 30 }
-  else { totalRounds = 9999 }
 
   p1Score = 0; p2Score = 0; roundNum = 0;
   p1Times = []; p2Times = []; p1FalseStarts = 0; p2FalseStarts = 0;
@@ -1226,24 +1118,18 @@ function settleRound(winner, winnerTime){
 
   if(checkWin()) return;
 
-  if(mode === 'marathon' && roundNum >= totalRounds){
-    setTimeout(function(){ endGame() }, 1000);
-    return;
-  }
-
   nextRoundTimeout = setTimeout(startRound, 1800);
 }
 
 // ============ WIN CHECK ============
 function checkWin(){
-  if(mode === 'marathon') return false;
   if(p1Score >= targetScore){ setTimeout(function(){ endGame(1) }, 800); return true }
   if(p2Score >= targetScore){ setTimeout(function(){ endGame(2) }, 800); return true }
   return false;
 }
 
 function checkMatchPoint(){
-  const need = mode === 'marathon' ? 9999 : targetScore;
+  const need = targetScore;
   const isMP1 = p1Score === need - 1 && need > 1;
   const isMP2 = p2Score === need - 1 && need > 1;
   p1MatchBorder.classList.toggle('active', isMP1);
@@ -1256,10 +1142,6 @@ function checkMatchPoint(){
 function endGame(winner){
   roundSettled = true; disableBtns(); clearAllTimers(); clearBotTimers();
   matchesPlayed++;
-
-  if(winner === undefined){
-    winner = p1Score > p2Score ? 1 : (p2Score > p1Score ? 2 : 0);
-  }
 
   const s = getStats();
   updateStats({
@@ -1339,7 +1221,7 @@ function updateScores(){
   p2ScoreEl.textContent = p2Score;
 
   const maxS = Math.max(p1Score, p2Score);
-  const need = mode === 'marathon' ? 9999 : targetScore;
+  const need = targetScore;
   if(maxS >= need - 2 && Math.abs(p1Score - p2Score) <= 2 && maxS > 2){
     document.querySelector('.game-inner').style.boxShadow = 'inset 0 0 60px rgba(255,200,0,.08)';
   } else {
