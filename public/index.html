@@ -58,7 +58,7 @@ body{display:flex;flex-direction:column;position:fixed;top:0;left:0;right:0;bott
 #game.active{display:flex}
 .game-inner{flex:1;display:flex;flex-direction:row;position:relative;overflow:hidden}
 
-.player-side{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:clamp(6px,1.5vw,16px) clamp(4px,1vw,12px);position:relative;overflow:hidden;transition:background .15s}
+.player-side{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:clamp(10px,2vh,20px) clamp(4px,1vw,12px);position:relative;overflow:hidden;transition:background .15s}
 .p1-side{background:linear-gradient(135deg,#060620,#0a1040);border-right:1px solid #1a1a3a}
 .p2-side{background:linear-gradient(135deg,#200606,#401010);border-left:1px solid #3a1a1a}
 .p1-side.rotated{transform:rotate(180deg)}
@@ -71,7 +71,7 @@ body{display:flex;flex-direction:column;position:fixed;top:0;left:0;right:0;bott
 .flash-red .flash-overlay{background:radial-gradient(circle,rgba(255,0,0,.4),transparent)!important;opacity:1}
 .flash-orange .flash-overlay{background:radial-gradient(circle,rgba(255,160,0,.5),transparent)!important;opacity:1}
 
-.player-label{font-size:clamp(.55rem,1.4vw,.8rem);text-transform:uppercase;letter-spacing:.25em;opacity:.5;font-weight:700}
+.player-label{font-size:clamp(.65rem,1.8vw,.85rem);text-transform:uppercase;letter-spacing:.35em;opacity:.6;font-weight:700}
 .p1-side .player-label{color:#4488ff}
 .p2-side .player-label{color:#ff4444}
 
@@ -97,9 +97,9 @@ body{display:flex;flex-direction:column;position:fixed;top:0;left:0;right:0;bott
 .p2-side .grab-btn{background:radial-gradient(circle at 35% 35%,#cc2222,#aa1111);border-color:#ff4444;color:#ffaaaa;box-shadow:0 0 30px rgba(255,68,68,.3),inset 0 -4px 10px rgba(0,0,0,.3)}
 .p2-side .grab-btn:active{box-shadow:0 0 50px rgba(255,68,68,.6),inset 0 -2px 5px rgba(0,0,0,.3)}
 
-/* Bot grab btn styling */
-.p2-side .grab-btn.bot-btn{opacity:.5;pointer-events:none;position:relative}
-.p2-side .grab-btn.bot-btn::after{content:'BOT';position:absolute;font-size:.5em;bottom:-1.5em;color:#ff6666;letter-spacing:.15em}
+/* Bot/opponent grab btn styling — hidden in bot/online */
+.grab-btn.bot-btn{opacity:.4;pointer-events:none;position:relative}
+.grab-btn.opponent-btn{opacity:0;pointer-events:none}
 
 /* ===== CENTER ZONE ===== */
 .center-zone{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;display:flex;flex-direction:column;align-items:center;pointer-events:none}
@@ -175,13 +175,22 @@ body{display:flex;flex-direction:column;position:fixed;top:0;left:0;right:0;bott
 /* ===== REMOVE ADS ===== */
 .remove-ads{position:absolute;bottom:4px;right:8px;font-size:.5rem;color:#282828;cursor:pointer;z-index:50}
 
-/* ===== LANDSCAPE OPTIMIZATION ===== */
+/* ===== PORTRAIT / MOBILE ===== */
 @media (orientation:portrait){
   .game-inner{flex-direction:column}
   .p1-side{border-right:none;border-bottom:1px solid #1a1a3a}
   .p2-side{border-left:none;border-top:1px solid #3a1a1a}
   .p1-side.rotated{transform:rotate(180deg)}
-  .grab-btn{width:clamp(60px,18vw,130px);height:clamp(60px,18vw,130px)}
+  .player-label{font-size:clamp(.7rem,3vw,.95rem);letter-spacing:.4em}
+  .score-display{font-size:clamp(3rem,14vw,6rem)}
+  .grab-btn{width:clamp(80px,28vw,140px);height:clamp(80px,28vw,140px);font-size:clamp(1rem,4vw,1.5rem);border-width:5px;margin-bottom:clamp(10px,3vh,30px)}
+  .center-text{font-size:clamp(1rem,4vw,1.5rem)}
+  .object-container{font-size:clamp(2.8rem,12vw,5rem)}
+  .reaction-display{font-size:clamp(.85rem,3vw,1.3rem)}
+  .streak-display{font-size:clamp(.65rem,2.5vw,.9rem)}
+  .status-text{font-size:clamp(.7rem,2.8vw,1rem)}
+  .center-result{font-size:clamp(.65rem,2.5vw,.9rem)}
+  .match-point-text{font-size:clamp(.6rem,2vw,.8rem)}
 }
 </style>
 </head>
@@ -763,27 +772,29 @@ function startGame(){
   gameEl.classList.add('active');
 
   // Configure labels and rotation based on play mode
+  p1Btn.classList.remove('bot-btn','opponent-btn');
+  p2Btn.classList.remove('bot-btn','opponent-btn');
   if(playMode === 'bot'){
     p1Side.classList.remove('rotated');
-    p1Label.textContent = 'YOU';
-    p2Label.textContent = 'BOT';
-    p2Btn.classList.add('bot-btn');
+    p1Label.textContent = 'BOT';
+    p2Label.textContent = 'YOU';
+    p1Btn.classList.add('bot-btn');
   } else if(playMode === 'online'){
     p1Side.classList.remove('rotated');
     if(onlinePlayerNum === 1){
       p1Label.textContent = 'YOU';
       p2Label.textContent = 'OPPONENT';
+      p2Btn.classList.add('opponent-btn');
     } else {
       p1Label.textContent = 'OPPONENT';
       p2Label.textContent = 'YOU';
+      p1Btn.classList.add('opponent-btn');
     }
-    p2Btn.classList.remove('bot-btn');
   } else {
     // Local: P1 rotated for face-to-face
     p1Side.classList.add('rotated');
     p1Label.textContent = 'Player 1';
     p2Label.textContent = 'Player 2';
-    p2Btn.classList.remove('bot-btn');
   }
 
   p1Score = 0; p2Score = 0; roundNum = 0;
@@ -815,8 +826,8 @@ function startRound(){
 
   // Enable appropriate buttons
   if(playMode === 'bot'){
-    p1Btn.classList.remove('disabled');
-    p2Btn.classList.add('disabled');
+    p2Btn.classList.remove('disabled');
+    p1Btn.classList.add('disabled');
   } else {
     enableBtns();
   }
@@ -844,8 +855,8 @@ function startRound(){
           if(Math.random() < diff.falseStartChance){
             botFalseStartTimer = setTimeout(function(){
               if(!roundSettled && !objectShown){
-                p2Pressed = true;
-                handleFalseStart(2);
+                p1Pressed = true;
+                handleFalseStart(1);
               }
             }, 80 + Math.random() * 150);
           }
@@ -896,18 +907,18 @@ function scheduleBotGrab(){
   botTimer = setTimeout(function(){
     if(roundSettled || !objectShown) return;
     const rt = Math.round(performance.now() - objectTime);
-    p2Pressed = true;
-    p2ReactionTime = rt;
-    p2Times.push(rt);
-    showReaction(2, rt);
+    p1Pressed = true;
+    p1ReactionTime = rt;
+    p1Times.push(rt);
+    showReaction(1, rt);
 
-    if(!p1Pressed){
-      settleRound(2, rt);
+    if(!p2Pressed){
+      settleRound(1, rt);
     } else {
-      if(rt <= p1ReactionTime){
-        settleRound(2, rt);
+      if(rt <= p2ReactionTime){
+        settleRound(1, rt);
       } else {
-        settleRound(1, p1ReactionTime);
+        settleRound(2, p2ReactionTime);
       }
     }
   }, reactionTime);
@@ -924,6 +935,9 @@ function clearBotTimers(){
 function onP1Grab(e){
   e.preventDefault(); e.stopPropagation();
   if(roundSettled || p1Pressed || !roundActive) return;
+
+  // In bot mode, P1 is the bot — ignore human input
+  if(playMode === 'bot') return;
 
   // Online mode: send grab to server
   if(playMode === 'online'){
@@ -959,11 +973,6 @@ function onP1Grab(e){
   showReaction(1, rt);
 
   if(!p2Pressed){
-    if(playMode === 'bot'){
-      // Wait for bot to press or timeout
-      // Bot might still press - we already won, settle it
-      clearBotTimers();
-    }
     settleRound(1, rt);
   } else {
     if(rt <= p2ReactionTime){
@@ -977,9 +986,6 @@ function onP1Grab(e){
 function onP2Grab(e){
   e.preventDefault(); e.stopPropagation();
   if(roundSettled || p2Pressed || !roundActive) return;
-
-  // In bot mode, P2 button is disabled for human
-  if(playMode === 'bot') return;
 
   // Online mode: send grab to server
   if(playMode === 'online'){
@@ -1015,6 +1021,7 @@ function onP2Grab(e){
   showReaction(2, rt);
 
   if(!p1Pressed){
+    if(playMode === 'bot') clearBotTimers();
     settleRound(2, rt);
   } else {
     if(rt <= p1ReactionTime){
@@ -1101,7 +1108,7 @@ function settleRound(winner, winnerTime){
   }
 
   const winnerLabel = playMode === 'bot'
-    ? (winner === 1 ? 'You grab' : 'Bot grabs')
+    ? (winner === 2 ? 'You grab' : 'Bot grabs')
     : 'Player ' + winner + ' grabs';
   centerText.textContent = winnerLabel + ' it!';
   centerText.style.color = winner === 1 ? '#4488ff' : '#ff4444';
@@ -1171,7 +1178,7 @@ function showVictory(winner){
     vsub.textContent = p1Score + ' - ' + p2Score;
   } else {
     if(playMode === 'bot'){
-      vtitle.textContent = winner === 1 ? 'YOU WIN!' : 'BOT WINS!';
+      vtitle.textContent = winner === 2 ? 'YOU WIN!' : 'BOT WINS!';
     } else if(playMode === 'online'){
       const youWin = (winner === onlinePlayerNum);
       vtitle.textContent = youWin ? 'YOU WIN!' : 'YOU LOSE!';
@@ -1185,8 +1192,8 @@ function showVictory(winner){
   function avg(arr){ return arr.length ? Math.round(arr.reduce(function(a,b){ return a+b },0) / arr.length) : '-' }
   function fastest(arr){ return arr.length ? Math.min.apply(null, arr) : '-' }
 
-  const lab1 = playMode === 'bot' ? 'YOU' : (playMode === 'online' ? (onlinePlayerNum === 1 ? 'YOU' : 'OPP') : 'P1');
-  const lab2 = playMode === 'bot' ? 'BOT' : (playMode === 'online' ? (onlinePlayerNum === 2 ? 'YOU' : 'OPP') : 'P2');
+  const lab1 = playMode === 'bot' ? 'BOT' : (playMode === 'online' ? (onlinePlayerNum === 1 ? 'YOU' : 'OPP') : 'P1');
+  const lab2 = playMode === 'bot' ? 'YOU' : (playMode === 'online' ? (onlinePlayerNum === 2 ? 'YOU' : 'OPP') : 'P2');
 
   $('victoryStats').innerHTML =
     '<div class="p1-stat">' + avg(p1Times) + (p1Times.length ? 'ms' : '') + '</div>' +
