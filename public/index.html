@@ -779,7 +779,7 @@ $('menuBtn').addEventListener('click',function(){
 $('closeAd').addEventListener('click',function(){$('adInterstitial').classList.add('hidden')});
 
 function showMenu(){
-  clearAllTimers();clearBotTimers();refreshEcoUI();
+  clearAllTimers();clearBotTimers();clearSession();refreshEcoUI();
   menuEl.classList.remove('hidden');gameEl.classList.remove('active');
   victoryEl.classList.remove('active');lobbyEl.classList.remove('active');
 }
@@ -1020,7 +1020,7 @@ function checkMatchPoint(){
   matchPointText.classList.toggle('active',m1||m2);if((m1||m2)&&roundNum>1)SFX.matchPoint();
 }
 function endGame(winner){
-  roundSettled=true;disableBtns();clearAllTimers();clearBotTimers();matchesPlayed++;
+  roundSettled=true;disableBtns();clearAllTimers();clearBotTimers();matchesPlayed++;clearSession();
   const s=getStats();updateStats({gamesPlayed:(s.gamesPlayed||0)+1,p1Wins:(s.p1Wins||0)+(winner===1?1:0),p2Wins:(s.p2Wins||0)+(winner===2?1:0)});
   // Award coins & XP
   const youWin=playMode==='bot'?(winner===2):true;
@@ -1137,14 +1137,52 @@ function animConfetti(){
 }
 function stopConfetti(){confettiRunning=false;cctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height)}
 
+// ============ SESSION SAVE/RESTORE ============
+const SESSION_KEY='quickgrab_session';
+function saveSession(){
+  if(!gameEl.classList.contains('active'))return clearSession();
+  try{localStorage.setItem(SESSION_KEY,JSON.stringify({
+    playMode:playMode,botDifficulty:botDifficulty,targetScore:targetScore,
+    p1Score:p1Score,p2Score:p2Score,roundNum:roundNum,
+    p1FalseStarts:p1FalseStarts,p2FalseStarts:p2FalseStarts,
+    p1MaxStreak:p1MaxStreak,p2MaxStreak:p2MaxStreak,
+    p1Times:p1Times,p2Times:p2Times,ts:Date.now()
+  }))}catch(e){}
+}
+function clearSession(){try{localStorage.removeItem(SESSION_KEY)}catch(e){}}
+function loadSession(){try{return JSON.parse(localStorage.getItem(SESSION_KEY))}catch(e){return null}}
+function tryResumeSession(){
+  const s=loadSession();if(!s)return;
+  // Only resume if less than 5 minutes old and was a bot game
+  if(Date.now()-s.ts>300000||s.playMode!=='bot'){clearSession();return}
+  playMode=s.playMode;botDifficulty=s.botDifficulty;targetScore=s.targetScore;
+  p1Times=s.p1Times||[];p2Times=s.p2Times||[];
+  p1FalseStarts=s.p1FalseStarts;p2FalseStarts=s.p2FalseStarts;
+  p1MaxStreak=s.p1MaxStreak;p2MaxStreak=s.p2MaxStreak;
+  // Start game with restored scores
+  ensureAudio();applySkins();menuEl.classList.add('hidden');gameEl.classList.add('active');
+  p1Btn.classList.remove('bot-btn','opponent-btn');p2Btn.classList.remove('bot-btn','opponent-btn');
+  p1Side.classList.remove('rotated');p1Label.textContent='BOT';p2Label.textContent='YOU';p1Btn.classList.add('bot-btn');
+  p1Score=s.p1Score;p2Score=s.p2Score;roundNum=s.roundNum;
+  p1Streak=0;p2Streak=0;
+  updateScores();clearReactions();clearStreaks();clearStatuses();
+  matchPointText.classList.remove('active');p1MatchBorder.classList.remove('active');p2MatchBorder.classList.remove('active');
+  clearSession();
+  setTimeout(startRound,600);
+}
+
 // ============ EVENTS ============
 document.addEventListener('touchmove',function(e){e.preventDefault()},{passive:false});
 document.addEventListener('dblclick',function(e){e.preventDefault()});
 window.addEventListener('resize',function(){if(confettiRunning){confettiCanvas.width=window.innerWidth;confettiCanvas.height=window.innerHeight}});
+// Save all data when leaving/backgrounding
+window.addEventListener('beforeunload',function(){saveSession();saveEco(getEco());saveStats(getStats())});
+document.addEventListener('visibilitychange',function(){if(document.hidden){saveSession();saveEco(getEco());saveStats(getStats())}});
 
 // ============ INIT ============
 $('difficultySection').style.display=playMode==='bot'?'':'none';
 refreshEcoUI();applySkins();
+tryResumeSession();
 })();
 </script>
 </body>
